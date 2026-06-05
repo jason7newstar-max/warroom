@@ -22,6 +22,7 @@ Last updated: 2026-06-05 · by IA10 (Supervisor)
 | T-003 | Telegram war-room group + `warroom-say` (post layer) — all 4 agents posting ✅ | IA10 | solo | 🟢 done | main | 2026-06-05 |
 | T-004 | Phase 2 — agents AUTO-READ/react (listener LIVE for IA10/Dali; wake-inject next) | IA10 | solo | 🟡 in-progress | main | 2026-06-05 |
 | T-005 | Dali & Mini: each test-pickup — write a 1-paragraph proposal in tasks/T-004 for how a Codex session can be auto-fed a command (codex exec? watched file? CLI?). Commit + warroom-say when done. Dali done; Mini pending. | Dali, Mini | parallel | 🟡 in-progress | main | 2026-06-05 |
+| T-006 | Amazon Associate Program 曝光度提升复盘与执行建议 | Dali | solo | 🟢 done | main | 2026-06-05 |
 
 Status legend: 🔵 todo · 🟡 in-progress · 🟣 review · 🟢 done · 🔴 blocked · ⚪ parked
 
