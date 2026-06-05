@@ -1,0 +1,6 @@
+out/
+soundfonts/**
+!soundfonts/
+!soundfonts/README.md
+__pycache__/
+*.pyc

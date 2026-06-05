@@ -1,0 +1,36 @@
+# Chairman demo: 4/4, weak-beat pickup, A-centered string writing.
+set_tempo(84)
+set_meter(4, 4)
+anacrusis(1)
+
+part("Violin I", "Violin")
+part("Harmony", "StringEnsemble")
+part("Cello", "Violoncello")
+
+# Weak-beat pickup into the first full bar.
+add_note("Violin I", 0, 1, "E4", "quarter")
+add_note("Cello", 0, 1, "A2", "quarter")
+
+# Chairman example core: Violin I half-note A4, A major triad, then A major 7.
+add_note("Violin I", 1, 1, "A4", "half")
+stack_chord("Harmony", 1, 1, "A3", "maj", "half")
+add_note("Cello", 1, 1, "A2", "half")
+
+add_note("Violin I", 1, 3, "C#5", "quarter")
+add_note("Violin I", 1, 4, "E5", "quarter")
+stack_chord("Harmony", 1, 3, "A3", "maj7", "half")
+add_note("Cello", 1, 3, "A2", "half")
+
+# Resolve into a second bar so the phrase breathes.
+add_note("Violin I", 2, 1, "F#5", "quarter")
+add_note("Violin I", 2, 2, "E5", "quarter")
+add_note("Violin I", 2, 3, "C#5", "quarter")
+add_note("Violin I", 2, 4, "A4", "quarter")
+stack_chord("Harmony", 2, 1, "D4", "maj", "half")
+stack_chord("Harmony", 2, 3, "E4", "dom7", "half")
+add_note("Cello", 2, 1, "D2", "half")
+add_note("Cello", 2, 3, "E2", "half")
+
+add_note("Violin I", 3, 1, "A4", "whole")
+stack_chord("Harmony", 3, 1, "A3", "maj", "whole")
+add_note("Cello", 3, 1, "A2", "whole")
