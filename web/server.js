@@ -11,9 +11,9 @@ const BOARD_URL = "https://raw.githubusercontent.com/jason7newstar-max/warroom/m
 const COMMITS_URL = "https://api.github.com/repos/jason7newstar-max/warroom/commits?per_page=18";
 
 const AGENT_META = {
-  IA10: { id: "IA10", initials: "IA", avatar: "ia10.jpg", role: "Supervisor / COO", engine: "Claude Code", machine: "studio iMac" },
-  Karen: { id: "Karen", initials: "KA", avatar: "karen.jpg", role: "Worker", engine: "Claude Code", machine: "home MacBook Air" },
-  Mini: { id: "Mini", initials: "MI", avatar: "mini.jpg", role: "Worker", engine: "OpenAI Codex", machine: "home MacBook Air" },
+  IA10: { id: "IA10", initials: "IA", avatar: "ia10_work.png", role: "Supervisor / COO", engine: "Claude Code", machine: "studio iMac" },
+  Karen: { id: "Karen", initials: "KA", avatar: "karen_work.png", role: "Worker", engine: "Claude Code", machine: "home MacBook Air" },
+  Mini: { id: "Mini", initials: "MI", avatar: "mini_work.png", role: "Worker", engine: "OpenAI Codex", machine: "home MacBook Air" },
   Dali: { id: "Dali", initials: "DA", avatar: "dali.png", role: "Worker", engine: "OpenAI Codex", machine: "studio iMac" }
 };
 

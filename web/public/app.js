@@ -14,9 +14,9 @@ const worldviewDeck = document.querySelector("#worldview-deck");
 const worldviewSolo = document.querySelector("#worldview-solo");
 
 const AGENT_META = {
-  IA10: { id: "IA10", initials: "IA", avatar: "ia10.jpg", role: "Supervisor / COO", engine: "Claude Code", machine: "studio iMac" },
-  Karen: { id: "Karen", initials: "KA", avatar: "karen.jpg", role: "Reasoning / review", engine: "Claude Code", machine: "home MacBook Air" },
-  Mini: { id: "Mini", initials: "MI", avatar: "mini.jpg", role: "Implementation", engine: "OpenAI Codex", machine: "home MacBook Air" },
+  IA10: { id: "IA10", initials: "IA", avatar: "ia10_work.png", role: "Supervisor / COO", engine: "Claude Code", machine: "studio iMac" },
+  Karen: { id: "Karen", initials: "KA", avatar: "karen_work.png", role: "Reasoning / review", engine: "Claude Code", machine: "home MacBook Air" },
+  Mini: { id: "Mini", initials: "MI", avatar: "mini_work.png", role: "Implementation", engine: "OpenAI Codex", machine: "home MacBook Air" },
   Dali: { id: "Dali", initials: "DA", avatar: "dali.png", role: "Implementation", engine: "OpenAI Codex", machine: "studio iMac" }
 };
 
