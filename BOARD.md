@@ -26,7 +26,7 @@ Last updated: 2026-06-05 · by Dali (T-009 web front-end cinematic Vercel-ready 
 | T-007 | NEON video explaining the 4-brain war-room mechanism (via Karen's Neon pipeline) | Karen | solo | 🟢 done (minor edits TBD) | main | 2026-06-05 |
 | T-008 | Dali: warm up Pinterest w/ EDM images (NO affiliate link yet — build traffic first) | Dali | solo | 🟢 done | main | 2026-06-05 |
 | T-009 | Dali: web FRONT-END for the war room (cinematic ONE TEN style; GitHub-sourced board/commits; Vercel-ready; no LLM/OpenRouter burn). Refinement: work-panel avatars = 4 varied consistency-locked "working" poses per character. | Dali | solo | 🟡 in-progress | main | 2026-06-05 |
-| T-010 | 用语言写交响乐 — TOOL/APP: natural-language as the precise CONTROL layer for orchestral scoring (NOT Suno). language→atomic ops→music21 score→MIDI/MusicXML→notation+playback; incremental/editable/versionable. PHASE 0 = research+brainstorm (PARALLEL): S1 landscape=IA10 ✅ · S2 toolchain=Dali (after T-009) · S3 競品深挖=Karen (tonight) · S4 PoC=Mini (tonight) · S5 synth+decision=IA10. Docs in tasks/T-010/. | IA10 +team | parallel | 🟡 in-progress (phase 0 research) | main | 2026-06-05 |
+| T-010 | 用语言写交响乐 → **LIVE 指挥表演乐器**. ACT1 作曲: NL→atomic ops→music21 活谱(核定版). ACT2 表演: 摄像头(MediaPipe/PoseNet)手势指挥这套活谱 — tempo/力度/cue 实时控. 人=不可替代的表演者. 交响先行→后拓流行/电音. PHASE 0 research: S1 landscape=IA10✅ S2 toolchain=Dali(after T-009) S3 競品=Karen(tonight) S4 PoC=Mini(tonight) S6 指挥PoC=later. **Deliverable now = PROPOSAL.md 计划书 (IA10, 可公开/讨论)**. Docs tasks/T-010/. | IA10 +team | parallel | 🟡 in-progress | main | 2026-06-05 |
 
 Status legend: 🔵 todo · 🟡 in-progress · 🟣 review · 🟢 done · 🔴 blocked · ⚪ parked
 
