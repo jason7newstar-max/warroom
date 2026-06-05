@@ -11,10 +11,10 @@ const BOARD_URL = "https://raw.githubusercontent.com/jason7newstar-max/warroom/m
 const COMMITS_URL = "https://api.github.com/repos/jason7newstar-max/warroom/commits?per_page=18";
 
 const AGENT_META = {
-  IA10: { role: "Supervisor / COO", engine: "Claude Code", machine: "studio iMac" },
-  Dali: { role: "Worker", engine: "OpenAI Codex", machine: "studio iMac" },
-  Karen: { role: "Worker", engine: "Claude Code", machine: "home MacBook Air" },
-  Mini: { role: "Worker", engine: "OpenAI Codex", machine: "home MacBook Air" }
+  IA10: { id: "IA10", initials: "IA", role: "Supervisor / COO", engine: "Claude Code", machine: "studio iMac" },
+  Dali: { id: "Dali", initials: "DA", role: "Worker", engine: "OpenAI Codex", machine: "studio iMac" },
+  Karen: { id: "Karen", initials: "KA", role: "Worker", engine: "Claude Code", machine: "home MacBook Air" },
+  Mini: { id: "Mini", initials: "MI", role: "Worker", engine: "OpenAI Codex", machine: "home MacBook Air" }
 };
 
 function readBoard() {
@@ -183,7 +183,11 @@ function sendFile(res, requestPath) {
       ".html": "text/html; charset=utf-8",
       ".css": "text/css; charset=utf-8",
       ".js": "application/javascript; charset=utf-8",
-      ".svg": "image/svg+xml"
+      ".svg": "image/svg+xml",
+      ".png": "image/png",
+      ".jpg": "image/jpeg",
+      ".jpeg": "image/jpeg",
+      ".webp": "image/webp"
     };
     res.writeHead(200, { "content-type": types[ext] || "application/octet-stream" });
     res.end(data);

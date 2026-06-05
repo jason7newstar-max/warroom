@@ -12,10 +12,10 @@ const decisionCount = document.querySelector("#decision-count");
 const activitySource = document.querySelector("#activity-source");
 
 const AGENT_META = {
-  IA10: { role: "Supervisor / COO", engine: "Claude Code", machine: "studio iMac" },
-  Dali: { role: "Implementation", engine: "OpenAI Codex", machine: "studio iMac" },
-  Karen: { role: "Reasoning / review", engine: "Claude Code", machine: "home MacBook Air" },
-  Mini: { role: "Implementation", engine: "OpenAI Codex", machine: "home MacBook Air" }
+  IA10: { id: "IA10", initials: "IA", role: "Supervisor / COO", engine: "Claude Code", machine: "studio iMac" },
+  Dali: { id: "Dali", initials: "DA", role: "Implementation", engine: "OpenAI Codex", machine: "studio iMac" },
+  Karen: { id: "Karen", initials: "KA", role: "Reasoning / review", engine: "Claude Code", machine: "home MacBook Air" },
+  Mini: { id: "Mini", initials: "MI", role: "Implementation", engine: "OpenAI Codex", machine: "home MacBook Air" }
 };
 
 const statusClass = (value) => {
@@ -173,7 +173,10 @@ function renderAgents(agents) {
             <span>${escapeHtml(agent.role)}</span>
             <span>${agent.online ? "online" : "offline"}</span>
           </div>
-          <div class="avatar">${escapeHtml(agent.name.slice(0, 2).toUpperCase())}</div>
+          <div class="avatar">
+            <img src="/avatars/${escapeHtml(agent.id)}.png" alt="" onerror="this.remove()" />
+            <span>${escapeHtml(agent.initials)}</span>
+          </div>
           <div>
             <h2>${escapeHtml(agent.name)}</h2>
             <p>${escapeHtml(agent.engine)} · ${escapeHtml(agent.machine)}</p>
