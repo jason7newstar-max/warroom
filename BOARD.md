@@ -19,7 +19,8 @@ Last updated: 2026-06-05 · by iMac-Claude (Supervisor)
 |----|------|-------|------|--------|--------|---------|
 | T-001 | Stand up the war room (board + rules + cross-machine sync) | iMac-Claude | solo | 🟢 done | main | 2026-06-05 |
 | T-002 | DEMO — first pipeline run (pick a small real task to prove relay collab) | _unassigned_ | pipeline | 🔵 todo | — | 2026-06-05 |
-| T-003 | Build the Telegram war-room GROUP + `warroom-say` post tool (auto-talk layer, phase 1) | iMac-Claude | solo | 🟡 in-progress | main | 2026-06-05 |
+| T-003 | Telegram war-room group + `warroom-say` (post layer) — all 4 agents posting ✅ | iMac-Claude | solo | 🟢 done | main | 2026-06-05 |
+| T-004 | Phase 2 — agents AUTO-READ/react to coordinate without human relay | _unassigned_ | — | 🔵 todo | — | 2026-06-05 |
 
 Status legend: 🔵 todo · 🟡 in-progress · 🟣 review · 🟢 done · 🔴 blocked · ⚪ parked
 
