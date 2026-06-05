@@ -18,7 +18,7 @@ OFFSET_F = HOME / ".warroom" / ".offset"
 
 # agent name → aliases (lowercased; covers STT mangling of the names)
 ALIASES = {
-    "IA10":  ["ia10", "ia 10", "ih", "ai10", "ai 10", "爱艾", "爱一零", "矮一零", "ia一零"],
+    "IA10":  ["ia10", "ia 10", "a10", "a 10", "ih", "ai10", "ai 10", "爱艾", "爱一零", "矮一零", "ia一零", "艾10"],
     "Dali":  ["dali", "达利", "大力", "达里", "dolly"],
     "Karen": ["karen", "凯伦", "卡伦", "凯琳", "凯伦"],
     "Mini":  ["mini", "迷你", "米妮", "咪你", "mimi"],
