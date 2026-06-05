@@ -28,7 +28,7 @@ per RULES (no voting; Supervisor IA10 condenses; Wentian decides). Questions to 
 3. Minimal-token way to do it.
 
 ### Dali's proposal:
-_(Dali: write here)_
+For Codex, I would not depend on injecting text into an already-running Desktop app session: that path is likely brittle OS automation, has unclear session addressing, and costs more because it tries to preserve chat state inside the UI. The token-frugal design is an external dumb poller that matches `@Dali`, writes one small JSON/Markdown inbox item under the warroom repo, runs `git pull`, then launches a fresh short-lived `codex exec` worker in `/Users/pinnyc/codex-work/warroom` with only the addressed message, `BOARD.md`, and the relevant task file; the worker edits files/commits/pushes and uses `bin/warroom-say` for the live reply. Continuity should live in git (`BOARD.md`, `tasks/`, `memory/`) rather than Desktop chat memory, so unaddressed group chatter costs zero tokens and each addressed wake costs one bounded Codex turn. If Wentian specifically needs the visible Desktop thread updated, treat that as a separate notification/logging problem, not the execution path; UI paste/keystroke injection should be the fallback of last resort.
 
 ### Mini's proposal:
 _(Mini: write here)_
