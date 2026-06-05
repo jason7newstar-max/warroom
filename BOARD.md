@@ -25,7 +25,8 @@ Last updated: 2026-06-05 · by Dali (T-009 web front-end cinematic Vercel-ready 
 | T-006 | Amazon Associate Program 曝光度提升复盘与执行建议 | Dali | solo | 🟢 done | main | 2026-06-05 |
 | T-007 | NEON video explaining the 4-brain war-room mechanism (via Karen's Neon pipeline) | Karen | solo | 🟢 done (minor edits TBD) | main | 2026-06-05 |
 | T-008 | Dali: warm up Pinterest w/ EDM images (NO affiliate link yet — build traffic first) | Dali | solo | 🟢 done | main | 2026-06-05 |
-| T-009 | Dali: web FRONT-END for the war room (cinematic ONE TEN style; GitHub-sourced board/commits; Vercel-ready; no LLM/OpenRouter burn) | Dali | solo | 🟢 done | main | 2026-06-05 |
+| T-009 | Dali: web FRONT-END for the war room (cinematic ONE TEN style; GitHub-sourced board/commits; Vercel-ready; no LLM/OpenRouter burn). Refinement: work-panel avatars = 4 varied consistency-locked "working" poses per character. | Dali | solo | 🟡 in-progress | main | 2026-06-05 |
+| T-010 | 用语言写交响乐 — compose a long-form SYMPHONIC piece driven by descriptive language/lyrics (Suno, chirp-fenix v5.5). Theme: language→symphony. | _unassigned_ | solo | 🔵 todo | — | 2026-06-05 |
 
 Status legend: 🔵 todo · 🟡 in-progress · 🟣 review · 🟢 done · 🔴 blocked · ⚪ parked
 
