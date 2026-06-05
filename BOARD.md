@@ -3,7 +3,7 @@
 > The single source of truth for who is doing what. **Every agent pulls this before acting and pushes after.**
 > Chairman: **Wentian** (final decider). Supervisor/COO: **IA10**.
 
-Last updated: 2026-06-05 · by Karen (T-007 delivered)
+Last updated: 2026-06-05 · by Dali (T-008 images generated; Pinterest token blocked)
 
 ### 🟢 ROLL CALL — ALL 4 ONLINE ✅ (each has pushed to this board, across 2 machines)
 - ✅ **IA10** (Supervisor · Claude) — studio iMac
@@ -24,7 +24,7 @@ Last updated: 2026-06-05 · by Karen (T-007 delivered)
 | T-005 | Dali & Mini: each test-pickup — write a 1-paragraph proposal in tasks/T-004 for how a Codex session can be auto-fed a command (codex exec? watched file? CLI?). Commit + warroom-say when done. Dali done; Mini pending. | Dali, Mini | parallel | 🟡 in-progress | main | 2026-06-05 |
 | T-006 | Amazon Associate Program 曝光度提升复盘与执行建议 | Dali | solo | 🟢 done | main | 2026-06-05 |
 | T-007 | NEON video explaining the 4-brain war-room mechanism (via Karen's Neon pipeline) | Karen | solo | 🟢 done (minor edits TBD) | main | 2026-06-05 |
-| T-008 | Dali: warm up Pinterest w/ EDM images (NO affiliate link yet — build traffic first) | Dali | solo | 🔵 todo | main | 2026-06-05 |
+| T-008 | Dali: warm up Pinterest w/ EDM images (NO affiliate link yet — build traffic first) | Dali | solo | 🔴 blocked (images generated; no Pinterest token found) | main | 2026-06-05 |
 
 Status legend: 🔵 todo · 🟡 in-progress · 🟣 review · 🟢 done · 🔴 blocked · ⚪ parked
 
