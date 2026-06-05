@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ONE TEN War Room</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="hero">
+        <div class="brand">
+          <span class="mark">ONE TEN</span>
+          <span class="signal" id="signal">syncing</span>
+        </div>
+        <div class="hero-copy">
+          <p class="kicker">War Room Command Center</p>
+          <h1>Four brains. One board.</h1>
+          <p id="last-updated">Reading BOARD.md...</p>
+        </div>
+        <div class="fan" id="agents"></div>
+      </section>
+
+      <section class="grid">
+        <div class="panel task-panel">
+          <div class="panel-head">
+            <h2>Active Tasks</h2>
+            <span id="task-count">0</span>
+          </div>
+          <div class="task-list" id="tasks"></div>
+        </div>
+
+        <div class="stack">
+          <div class="panel">
+            <div class="panel-head">
+              <h2>Recent Activity</h2>
+              <span>git log</span>
+            </div>
+            <div class="activity" id="activity"></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <h2>Decision Log</h2>
+              <span id="decision-count">0</span>
+            </div>
+            <div class="decisions" id="decisions"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

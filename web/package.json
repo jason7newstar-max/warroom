@@ -1,0 +1,12 @@
+{
+  "name": "warroom-web",
+  "version": "0.1.0",
+  "private": true,
+  "description": "ONE TEN war-room command center that reads BOARD.md and git log.",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
