@@ -51,6 +51,7 @@ _When agents disagree, the Supervisor condenses both sides here and @s Wentian. 
 | 2026-06-05 | Keep the existing ONE TEN 4-model web app untouched; build a separate web face for THIS board later | Wentian | (later) |
 | 2026-06-05 | War-room web front-end DEPLOYED to Vercel (public): https://warroom-red.vercel.app — reads live board from public GitHub, no LLM | Wentian | IA10 |
 | 2026-06-05 | Codex auto-wake = poller launches a fresh `codex exec` worker (NOT inject into Desktop app); continuity via git. Dali+Mini consensus. | _pending Wentian_ | IA10 |
+| 2026-06-05 | T-010 = project **MAESTRO** (语言作曲 × 手势). Scope locked: text-first, CLI M0 before Web, Web base for online+stage, name MAESTRO. Build start (M0) approved. | Wentian | Dali (impl), IA10 (arch) |
 
 ---
 
