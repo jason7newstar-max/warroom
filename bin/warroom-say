@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# warroom-say "[your-id] message" — post a line to the War Room Telegram group.
+# Reads WARROOM_BOT_TOKEN + WARROOM_CHAT_ID from ~/.warroom/env (per-machine, NOT in the repo).
+set -euo pipefail
+ENV="${WARROOM_ENV:-$HOME/.warroom/env}"
+[ -f "$ENV" ] || { echo "warroom-say: missing $ENV (need WARROOM_BOT_TOKEN + WARROOM_CHAT_ID)" >&2; exit 1; }
+# shellcheck disable=SC1090
+set -a; . "$ENV"; set +a
+MSG="${*:-}"
+[ -n "$MSG" ] || { echo "usage: warroom-say \"[your-id] message\"" >&2; exit 2; }
+curl -sS -m 15 "https://api.telegram.org/bot${WARROOM_BOT_TOKEN}/sendMessage" \
+  --data-urlencode "chat_id=${WARROOM_CHAT_ID}" \
+  --data-urlencode "text=${MSG}" >/dev/null && echo "posted to war room ✓"
