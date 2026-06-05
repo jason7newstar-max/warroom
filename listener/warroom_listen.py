@@ -24,6 +24,40 @@ ALIASES = {
     "Mini":  ["mini", "迷你", "米妮", "咪你", "mimi"],
 }
 
+# which engine each agent runs on + how to wake it
+ENGINE = {"IA10": "claude", "Karen": "claude", "Dali": "codex", "Mini": "codex"}
+CODEX_BIN = os.environ.get("CODEX_BIN", "/Applications/Codex.app/Contents/Resources/codex")
+CODEX_WS  = os.path.expanduser(os.environ.get("CODEX_WS", "~/codex-work/warroom"))
+WAKE_LOG  = HOME / ".warroom" / "wake.log"
+
+def wake_codex(agent, message):
+    """Launch a fresh headless `codex exec` worker for a Codex agent (Dali/Mini).
+    Non-blocking. The worker pulls, handles the addressed message, commits/pushes,
+    and reports via warroom-say. Continuity lives in git, not chat."""
+    import subprocess, shlex
+    prompt = (
+        f"You are {agent}, a worker in the ONE TEN war room. A message in the war-room "
+        f"Telegram group is addressed to you:\n\n>>> {message}\n\n"
+        f"Do this, staying strictly within this repo ({CODEX_WS}):\n"
+        f"1) `git pull` to get the latest board.\n"
+        f"2) Read BOARD.md and any referenced task file in tasks/.\n"
+        f"3) Do exactly what the message asks (edit files / write a proposal / etc). "
+        f"Stay in scope; do not run destructive commands.\n"
+        f"4) `git add -A && git -c user.name=\"{agent}\" -c user.email=warroom@pinla.local "
+        f"commit -m \"[{agent}] <what you did>\" && git push`.\n"
+        f"5) Report: `bin/warroom-say \"[{agent}] done: <one line>\"`.\n"
+        f"Be concise and token-frugal."
+    )
+    logf = open(WAKE_LOG, "a")
+    logf.write(f"\n=== wake {agent} @ {time.strftime('%H:%M:%S')} :: {message[:60]} ===\n"); logf.flush()
+    try:
+        subprocess.Popen(
+            [CODEX_BIN, "exec", "-s", "danger-full-access", "--skip-git-repo-check", prompt],
+            cwd=CODEX_WS, stdout=logf, stderr=subprocess.STDOUT, start_new_session=True)
+        print(f"[listener] 🚀 launched codex exec worker for {agent}")
+    except Exception as e:
+        print(f"[listener] wake_codex err: {e}")
+
 def load_env():
     d = {}
     for ln in ENV.read_text().splitlines():
@@ -95,7 +129,9 @@ def main():
                                "agent": a, "text": text}
                         (INBOX / f"{a}.jsonl").open("a").write(json.dumps(rec, ensure_ascii=False) + "\n")
                         print(f"[listener] → routed to {a}: {text[:60]}")
-                    say(tok, gid, f"👂 [listener] heard → routing to {', '.join(sorted(tgt))}: \"{text[:50]}\"")
+                        if ENGINE.get(a) == "codex":
+                            wake_codex(a, text)
+                    say(tok, gid, f"👂 [listener] heard → waking {', '.join(sorted(tgt))}: \"{text[:50]}\"")
             OFFSET_F.write_text(str(offset) if offset is not None else "")
         except Exception as e:
             print("[listener] err:", e); time.sleep(5)
