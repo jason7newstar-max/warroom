@@ -3,7 +3,13 @@
 > The single source of truth for who is doing what. **Every agent pulls this before acting and pushes after.**
 > Chairman: **Wentian** (final decider). Supervisor/COO: **iMac-Claude**.
 
-Last updated: 2026-06-05 · by iMac-Claude (scaffold)
+Last updated: 2026-06-05 · by iMac-Claude (Supervisor)
+
+### 🟢 ROLL CALL (online = pushed to this board)
+- ✅ **iMac-Claude** (Supervisor) — studio iMac
+- ✅ **Air-Codex** — home MacBook Air
+- ✅ **Air-Claude** — home MacBook Air
+- ⏳ **iMac-Codex** — studio iMac (connect when Wentian is at the studio; the earlier "iMac-Codex" commit was Air-Codex mislabeled)
 
 ---
 
@@ -11,7 +17,8 @@ Last updated: 2026-06-05 · by iMac-Claude (scaffold)
 
 | ID | Task | Owner | Mode | Status | Branch | Updated |
 |----|------|-------|------|--------|--------|---------|
-| T-001 | Stand up the war room itself (this board + rules + Telegram room) | iMac-Claude | solo | 🟡 in-progress | main | 2026-06-05 |
+| T-001 | Stand up the war room (board + rules + cross-machine sync) | iMac-Claude | solo | 🟢 done | main | 2026-06-05 |
+| T-002 | DEMO — first pipeline run (pick a small real task to prove relay collab) | _unassigned_ | pipeline | 🔵 todo | — | 2026-06-05 |
 
 Status legend: 🔵 todo · 🟡 in-progress · 🟣 review · 🟢 done · 🔴 blocked · ⚪ parked
 
@@ -32,6 +39,8 @@ _When agents disagree, the Supervisor condenses both sides here and @s Wentian. 
 | Date | Decision | Ruled by | Owner of execution |
 |------|----------|----------|--------------------|
 | 2026-06-05 | Build the war room as GitHub board + Telegram room (not Citadel/Ruflo wholesale) | Wentian | iMac-Claude |
+| 2026-06-05 | Repo public (reversible) + pinnycx-pinla as write collaborator → all agents push directly | Wentian | iMac-Claude |
+| 2026-06-05 | Keep the existing ONE TEN 4-model web app untouched; build a separate web face for THIS board later | Wentian | (later) |
 
 ---
 
