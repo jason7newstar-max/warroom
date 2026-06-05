@@ -26,7 +26,7 @@ Last updated: 2026-06-05 · by Dali (T-009 web front-end cinematic Vercel-ready 
 | T-007 | NEON video explaining the 4-brain war-room mechanism (via Karen's Neon pipeline) | Karen | solo | 🟢 done (minor edits TBD) | main | 2026-06-05 |
 | T-008 | Dali: warm up Pinterest w/ EDM images (NO affiliate link yet — build traffic first) | Dali | solo | 🟢 done | main | 2026-06-05 |
 | T-009 | Dali: web FRONT-END for the war room (cinematic ONE TEN style; GitHub-sourced board/commits; Vercel-ready; no LLM/OpenRouter burn). Refinement: work-panel avatars = 4 varied consistency-locked "working" poses per character. | Dali | solo | 🟡 in-progress | main | 2026-06-05 |
-| T-010 | 用语言写交响乐 — compose a long-form SYMPHONIC piece driven by descriptive language/lyrics (Suno, chirp-fenix v5.5). Theme: language→symphony. | _unassigned_ | solo | 🔵 todo | — | 2026-06-05 |
+| T-010 | 用语言写交响乐 — TOOL/APP: natural-language as the precise CONTROL layer for orchestral scoring (NOT Suno). language→atomic ops→music21 score→MIDI/MusicXML→notation+playback; incremental/editable/versionable. PHASE 0 = research+brainstorm (PARALLEL): S1 landscape=IA10 ✅ · S2 toolchain=Dali (after T-009) · S3 競品深挖=Karen (tonight) · S4 PoC=Mini (tonight) · S5 synth+decision=IA10. Docs in tasks/T-010/. | IA10 +team | parallel | 🟡 in-progress (phase 0 research) | main | 2026-06-05 |
 
 Status legend: 🔵 todo · 🟡 in-progress · 🟣 review · 🟢 done · 🔴 blocked · ⚪ parked
 
