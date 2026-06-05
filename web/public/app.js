@@ -10,13 +10,48 @@ const lastUpdated = document.querySelector("#last-updated");
 const taskCount = document.querySelector("#task-count");
 const decisionCount = document.querySelector("#decision-count");
 const activitySource = document.querySelector("#activity-source");
+const worldviewDeck = document.querySelector("#worldview-deck");
+const worldviewSolo = document.querySelector("#worldview-solo");
 
 const AGENT_META = {
-  IA10: { id: "IA10", initials: "IA", role: "Supervisor / COO", engine: "Claude Code", machine: "studio iMac" },
-  Dali: { id: "Dali", initials: "DA", role: "Implementation", engine: "OpenAI Codex", machine: "studio iMac" },
-  Karen: { id: "Karen", initials: "KA", role: "Reasoning / review", engine: "Claude Code", machine: "home MacBook Air" },
-  Mini: { id: "Mini", initials: "MI", role: "Implementation", engine: "OpenAI Codex", machine: "home MacBook Air" }
+  IA10: { id: "IA10", initials: "IA", avatar: "ia10.jpg", role: "Supervisor / COO", engine: "Claude Code", machine: "studio iMac" },
+  Karen: { id: "Karen", initials: "KA", avatar: "karen.jpg", role: "Reasoning / review", engine: "Claude Code", machine: "home MacBook Air" },
+  Mini: { id: "Mini", initials: "MI", avatar: "mini.jpg", role: "Implementation", engine: "OpenAI Codex", machine: "home MacBook Air" },
+  Dali: { id: "Dali", initials: "DA", avatar: "dali.png", role: "Implementation", engine: "OpenAI Codex", machine: "studio iMac" }
 };
+
+const WORLDVIEW = [
+  {
+    id: "one-ten",
+    name: "ONE TEN",
+    number: "01",
+    avatar: "wentian.jpg",
+    line: "Carbon intent, final judgment."
+  },
+  {
+    id: "ia10",
+    name: "IA10",
+    number: "02",
+    avatar: "ia10.jpg",
+    line: "Architecture, review, decisions."
+  },
+  {
+    id: "karen",
+    name: "Karen",
+    number: "03",
+    avatar: "karen.jpg",
+    line: "Reasoning, research, documentation."
+  },
+  {
+    id: "mini",
+    name: "Mini",
+    number: "04",
+    avatar: "mini.jpg",
+    line: "Compact execution and tool work."
+  }
+];
+
+let activeWorldview = 0;
 
 const statusClass = (value) => {
   const normalized = String(value || "").toLowerCase();
@@ -64,6 +99,37 @@ function parseTable(markdown, heading) {
   return tableLines.slice(2).map((line) => {
     const cells = line.split("|").slice(1, -1).map(stripMd);
     return Object.fromEntries(headers.map((header, index) => [header, cells[index] || ""]));
+  });
+}
+
+function renderWorldview() {
+  const active = WORLDVIEW[activeWorldview];
+  worldviewSolo.innerHTML = `
+    <img src="/avatars/${escapeHtml(active.avatar)}" alt="" />
+    <div class="solo-scrim"></div>
+    <div class="solo-content">
+      <span>${escapeHtml(active.number)}</span>
+      <h2>${escapeHtml(active.name)}</h2>
+      <p>${escapeHtml(active.line)}</p>
+    </div>
+  `;
+
+  if (!worldviewDeck.children.length) {
+    worldviewDeck.innerHTML = WORLDVIEW.map(
+      (card, index) => `
+        <button class="deck-card worldview-card" type="button" data-index="${index}" aria-pressed="false">
+          <img src="/avatars/${escapeHtml(card.avatar)}" alt="" />
+          <span>${escapeHtml(card.number)}</span>
+          <strong>${escapeHtml(card.name)}</strong>
+        </button>
+      `
+    ).join("");
+  }
+
+  [...worldviewDeck.querySelectorAll(".worldview-card")].forEach((card, index) => {
+    const selected = index === activeWorldview;
+    card.classList.toggle("selected", selected);
+    card.setAttribute("aria-pressed", String(selected));
   });
 }
 
@@ -174,7 +240,7 @@ function renderAgents(agents) {
             <span>${agent.online ? "online" : "offline"}</span>
           </div>
           <div class="avatar">
-            <img src="/avatars/${escapeHtml(agent.id)}.png" alt="" onerror="this.remove()" />
+            <img src="/avatars/${escapeHtml(agent.avatar)}" alt="" onerror="this.remove()" />
             <span>${escapeHtml(agent.initials)}</span>
           </div>
           <div>
@@ -265,5 +331,13 @@ async function refresh() {
   }
 }
 
+worldviewDeck.addEventListener("click", (event) => {
+  const card = event.target.closest(".worldview-card");
+  if (!card) return;
+  activeWorldview = Number(card.dataset.index || 0);
+  renderWorldview();
+});
+
+renderWorldview();
 refresh();
 setInterval(refresh, 30000);
