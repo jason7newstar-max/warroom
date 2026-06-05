@@ -58,6 +58,30 @@ def wake_codex(agent, message):
     except Exception as e:
         print(f"[listener] wake_codex err: {e}")
 
+CLAUDE_BIN = os.environ.get("CLAUDE_BIN", os.path.expanduser("~/.local/bin/claude"))
+CLAUDE_WS  = os.path.expanduser(os.environ.get("CLAUDE_WS", "~/claude-work/warroom"))
+
+def wake_claude(agent, message):
+    """Launch a fresh headless `claude -p` worker for a Claude WORKER agent (e.g. Karen).
+    Symmetric to wake_codex; continuity via git, token-frugal (only on a real pickup)."""
+    import subprocess
+    prompt = (
+        f"You are {agent}, a worker in the ONE TEN war room. A war-room group message is "
+        f"addressed to you:\n\n>>> {message}\n\nStaying strictly within {CLAUDE_WS}: "
+        f"git pull; read BOARD.md + any referenced tasks/ file; do exactly what the message asks "
+        f"(no destructive commands); then git add -A && git -c user.name=\"{agent}\" "
+        f"-c user.email=warroom@pinla.local commit -m \"[{agent}] <what>\" && git push; "
+        f"then run bin/warroom-say \"[{agent}] done: <one line>\". Be concise."
+    )
+    logf = open(WAKE_LOG, "a")
+    logf.write(f"\n=== wake {agent} (claude) @ {time.strftime('%H:%M:%S')} :: {message[:60]} ===\n"); logf.flush()
+    try:
+        subprocess.Popen([CLAUDE_BIN, "-p", "--allow-dangerously-skip-permissions", prompt],
+            cwd=CLAUDE_WS, stdout=logf, stderr=subprocess.STDOUT, start_new_session=True)
+        print(f"[listener] 🚀 launched claude -p worker for {agent}")
+    except Exception as e:
+        print(f"[listener] wake_claude err: {e}")
+
 def load_env():
     d = {}
     for ln in ENV.read_text().splitlines():
