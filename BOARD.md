@@ -28,6 +28,8 @@ Last updated: 2026-06-05 · by Dali (T-009 web front-end cinematic Vercel-ready 
 | T-009 | Dali: web FRONT-END for the war room (cinematic ONE TEN style; GitHub-sourced board/commits; Vercel-ready; no LLM/OpenRouter burn). Refinement: work-panel avatars = 4 varied consistency-locked "working" poses per character. | Dali | solo | 🟡 in-progress | main | 2026-06-05 |
 | T-010 | 用语言写交响乐 → **LIVE 指挥表演乐器**. ACT1 作曲: NL→atomic ops→music21 活谱(核定版). ACT2 表演: 摄像头(MediaPipe/PoseNet)手势指挥这套活谱 — tempo/力度/cue 实时控. 人=不可替代的表演者. 交响先行→后拓流行/电音. PHASE 0 research: S1 landscape=IA10✅ S2 toolchain=Dali(after T-009) S3 競品=Karen(tonight) S4 PoC=Mini(tonight) S6 指挥PoC=later. **Deliverable now = PROPOSAL.md 计划书 (IA10, 可公开/讨论)**. Docs tasks/T-010/. | IA10 +team | parallel | 🟡 in-progress | main | 2026-06-05 |
 
+| T-011 | "Vibe Coding 新的篇章" — next project (idea stage). Thesis TBD; brainstorm in tasks/T-011/. | IA10 (brainstorm) | solo | ⚪ idea | — | 2026-06-05 |
+
 Status legend: 🔵 todo · 🟡 in-progress · 🟣 review · 🟢 done · 🔴 blocked · ⚪ parked
 
 ---
