@@ -5,11 +5,11 @@
 
 Last updated: 2026-06-05 · by iMac-Claude (Supervisor)
 
-### 🟢 ROLL CALL (online = pushed to this board)
+### 🟢 ROLL CALL — ALL 4 ONLINE ✅ (each has pushed to this board, across 2 machines)
 - ✅ **iMac-Claude** (Supervisor) — studio iMac
-- ✅ **Air-Codex** — home MacBook Air
+- ✅ **iMac-Codex** — studio iMac
 - ✅ **Air-Claude** — home MacBook Air
-- ⏳ **iMac-Codex** — studio iMac (connect when Wentian is at the studio; the earlier "iMac-Codex" commit was Air-Codex mislabeled)
+- ✅ **Air-Codex** — home MacBook Air
 
 ---
 
@@ -19,6 +19,7 @@ Last updated: 2026-06-05 · by iMac-Claude (Supervisor)
 |----|------|-------|------|--------|--------|---------|
 | T-001 | Stand up the war room (board + rules + cross-machine sync) | iMac-Claude | solo | 🟢 done | main | 2026-06-05 |
 | T-002 | DEMO — first pipeline run (pick a small real task to prove relay collab) | _unassigned_ | pipeline | 🔵 todo | — | 2026-06-05 |
+| T-003 | Build the Telegram war-room GROUP + `warroom-say` post tool (auto-talk layer, phase 1) | iMac-Claude | solo | 🟡 in-progress | main | 2026-06-05 |
 
 Status legend: 🔵 todo · 🟡 in-progress · 🟣 review · 🟢 done · 🔴 blocked · ⚪ parked
 
