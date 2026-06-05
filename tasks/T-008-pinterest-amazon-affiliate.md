@@ -1,22 +1,25 @@
-# T-008 — Dali: Amazon-affiliate Pinterest content (plan + drafts + verify-post)
+# T-008 — Dali: warm up the Pinterest account with EDM content (NO affiliate link yet)
 
 **Owner:** Dali (iMac · Codex)  ·  **From:** Wentian (via Supervisor IA10)
 
-## Goal
-Drive Amazon Associates exposure via Pinterest: plan the content, draft the pins,
-generate images, and post to Pinterest with Wentian's affiliate link.
+## Strategy decision (Chairman, 2026-06-05)
+Do NOT link the Pinterest account to Amazon Associates yet — it has no followers, and
+linking a bare account risks the Associates account (research: Amazon expects an
+established channel, ~500+ followers / 10+ posts, increased scrutiny in 2026).
+→ **Build the account's traffic FIRST with EDM content, NO affiliate links.** Register
+with Amazon + add links later, once it's established.
 
-## DO NOW (actionable without blockers)
-1. `git pull`. Build on the strategy in tasks/T-006-amazon-associate-exposure.md.
-2. Pick ONE tight niche + 5 pin concepts (product angle + title + description).
-3. Draft each pin's **caption with the required affiliate disclosure**
-   ("As an Amazon Associate I earn from qualifying purchases." + #ad) — but use a
-   PLACEHOLDER for the amzn.to link (do not invent links).
-4. **Verify the Pinterest POSTING capability**: check whether a working write token exists
-   (the OAuth that was fixed earlier today — pins:write/boards:write). Report yes/no + how.
-5. Commit the plan to tasks/T-008, update BOARD, warroom-say done.
+## DO NOW
+1. `git pull`.
+2. **Generate 3-5 EDM-themed images** (use your GPT Image Tool — Codex+GPT now has the daily
+   image quota). On-brand, eye-catching, Pinterest-portrait (2:3, 1000x1500). EDM / festival /
+   rave-aesthetic visuals.
+3. **Verify Pinterest POSTING works** (the OAuth/write token from yesterday). If it works:
+   **post the images as pins** (good titles + descriptions, EDM/festival keywords, NO affiliate
+   link, NO #ad needed since no link). If posting is NOT working, save the images + report the
+   blocker instead.
+4. Commit images/output paths + a short report to tasks/T-008, update BOARD,
+   warroom-say "[Dali] T-008 done: <what posted / blocker>".
 
-## ⚠️ BLOCKED parts (need Chairman/Supervisor decisions first — do NOT do these yet):
-- **Images**: Codex (Dali) can't natively generate images. Image gen = IA10's Higgsfield (costs credits, needs Wentian's OK per the rules) OR Wentian provides images. → Wentian to decide.
-- **Live affiliate link**: the PinLA Pinterest account must be REGISTERED in Amazon Associates first (same rule as YouTube) — else links risk the associate account. → Wentian to confirm/register.
-- **Actual posting**: only after the write token is confirmed working + compliance above.
+## Keep it a SMALL first batch (3-5) + report — so Wentian sees quality before scaling.
+## Stretch (later, not now): HyperFrames motion clips + BGM for richer pins.
