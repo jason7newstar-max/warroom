@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
+    <div class="cosmos" aria-hidden="true"></div>
     <main class="shell">
       <section class="hero">
         <div class="brand">
@@ -16,16 +17,24 @@
         <div class="hero-copy">
           <p class="kicker">War Room Command Center</p>
           <h1>The duet of carbon and silicon.</h1>
-          <p id="last-updated">Reading BOARD.md...</p>
+          <p id="last-updated">Reading the public GitHub board...</p>
+          <div class="hero-meta">
+            <span>GitHub live board</span>
+            <span>No LLM calls</span>
+            <span>Vercel ready</span>
+          </div>
         </div>
-        <div class="fan" id="agents"></div>
+        <aside class="brain-status" aria-label="4-brain status">
+          <div class="section-label">4-brain status</div>
+          <div class="fan" id="agents"></div>
+        </aside>
       </section>
 
       <section class="grid">
         <div class="panel task-panel">
           <div class="panel-head">
             <h2>Active Tasks</h2>
-            <span id="task-count">0</span>
+            <span id="task-count">0 tasks</span>
           </div>
           <div class="task-list" id="tasks"></div>
         </div>
@@ -34,7 +43,7 @@
           <div class="panel">
             <div class="panel-head">
               <h2>Recent Activity</h2>
-              <span>git log</span>
+              <span id="activity-source">GitHub API</span>
             </div>
             <div class="activity" id="activity"></div>
           </div>

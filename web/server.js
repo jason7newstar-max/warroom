@@ -7,6 +7,8 @@ const WEB_ROOT = __dirname;
 const REPO_ROOT = path.resolve(WEB_ROOT, "..");
 const PUBLIC_ROOT = path.join(WEB_ROOT, "public");
 const PORT = Number(process.env.PORT || 4173);
+const BOARD_URL = "https://raw.githubusercontent.com/jason7newstar-max/warroom/main/BOARD.md";
+const COMMITS_URL = "https://api.github.com/repos/jason7newstar-max/warroom/commits?per_page=18";
 
 const AGENT_META = {
   IA10: { role: "Supervisor / COO", engine: "Claude Code", machine: "studio iMac" },
@@ -17,6 +19,12 @@ const AGENT_META = {
 
 function readBoard() {
   return fs.readFileSync(path.join(REPO_ROOT, "BOARD.md"), "utf8");
+}
+
+async function fetchBoard() {
+  const response = await fetch(BOARD_URL, { cache: "no-store" });
+  if (!response.ok) throw new Error(`BOARD.md HTTP ${response.status}`);
+  return response.text();
 }
 
 function stripMd(value) {
@@ -134,6 +142,18 @@ function getGitLog() {
   });
 }
 
+async function getGitHubCommits() {
+  const response = await fetch(COMMITS_URL, { cache: "no-store" });
+  if (!response.ok) throw new Error(`commits HTTP ${response.status}`);
+  const commits = await response.json();
+  return commits.map((item) => ({
+    hash: String(item.sha || "").slice(0, 7),
+    author: item.commit?.author?.name || item.author?.login || "unknown",
+    date: item.commit?.author?.date || item.commit?.committer?.date || new Date().toISOString(),
+    subject: item.commit?.message?.split("\n")[0] || "commit"
+  }));
+}
+
 function sendJson(res, payload) {
   res.writeHead(200, {
     "content-type": "application/json; charset=utf-8",
@@ -173,9 +193,24 @@ function sendFile(res, requestPath) {
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
   if (url.pathname === "/api/state") {
-    const board = parseBoard(readBoard());
-    const activity = await getGitLog();
-    sendJson(res, { generatedAt: new Date().toISOString(), board, activity });
+    try {
+      const [markdown, activity] = await Promise.all([fetchBoard(), getGitHubCommits()]);
+      sendJson(res, {
+        generatedAt: new Date().toISOString(),
+        source: "github",
+        board: parseBoard(markdown),
+        activity
+      });
+    } catch (error) {
+      const board = parseBoard(readBoard());
+      const activity = await getGitLog();
+      sendJson(res, {
+        generatedAt: new Date().toISOString(),
+        source: "local fallback",
+        board,
+        activity
+      });
+    }
     return;
   }
   sendFile(res, url.pathname);

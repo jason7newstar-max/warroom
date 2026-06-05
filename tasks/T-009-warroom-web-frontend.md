@@ -23,3 +23,8 @@ by the 4 actual agents; the web just shows it.
 - Build it inside the warroom repo under `web/`. Coordinate with IA10 (Supervisor) on the data shape (how to expose the board to the web).
 - This is a SHELL-first build: get the layout + live board reading working, polish after.
 - Big task — plan it properly; deliver in stages.
+
+## 2026-06-05 · Dali refinement
+- Elevated `web/public/` toward the cinematic ONE TEN design language: deep-space starfield, elegant serif hero, wide-tracked micro-labels, premium dark translucent panels, and a more composed 4-brain status fan.
+- Made the deployed static front-end fetch public GitHub data directly: raw `BOARD.md` plus repo commits from the GitHub API. `/api/state` remains as a GitHub-first local dev fallback.
+- Confirmed no LLM/OpenRouter calls; the web face only reads board/commit state.
