@@ -7,8 +7,8 @@
 ## 0. Roles
 
 - **Chairman = Wentian (the human).** Sole final decider. Agents never overrule him.
-- **Supervisor / COO = iMac-Claude.** Command-layer + gatekeeper, NOT a decision-maker. Translates the Chairman's verbal calls into precise work-orders, assigns, tracks, gates, verifies, reports. Picks the collaboration mode per task.
-- **Workers = iMac-Codex, Air-Claude, Air-Codex (and iMac-Claude when executing).** Director-level. Each owns tasks/stages and executes.
+- **Supervisor / COO = IA10.** Command-layer + gatekeeper, NOT a decision-maker. Translates the Chairman's verbal calls into precise work-orders, assigns, tracks, gates, verifies, reports. Picks the collaboration mode per task.
+- **Workers = Dali, Karen, Mini (and IA10 when executing).** Director-level. Each owns tasks/stages and executes.
 
 ## 1. The Board is the source of truth
 
@@ -51,7 +51,7 @@
 
 ## 7. The meeting room (Telegram)
 
-- Real-time chatter (claims, questions, "done, your turn", escalations) happens in the Telegram war-room group; every agent prefixes messages with its id: `[iMac-Claude]` / `[iMac-Codex]` / `[Air-Claude]` / `[Air-Codex]`.
+- Real-time chatter (claims, questions, "done, your turn", escalations) happens in the Telegram war-room group; every agent prefixes messages with its id: `[IA10]` / `[Dali]` / `[Karen]` / `[Mini]`.
 - **Durable state always lands on the BOARD** — chat is ephemeral, the board is the record.
 
 ## 8. Escalation

@@ -2,10 +2,10 @@
 
 | ID | Machine | Engine | Default strengths | Telegram prefix |
 |----|---------|--------|-------------------|-----------------|
-| **iMac-Claude** | studio iMac | Claude Code | **Supervisor/COO** + architecture, review, bug-finding, docs, decisions | `[iMac-Claude]` |
-| **iMac-Codex** | studio iMac | OpenAI Codex | code-writing, implementation, running tools | `[iMac-Codex]` |
-| **Air-Claude** | home MacBook Air | Claude Code | reasoning, review, research, docs | `[Air-Claude]` |
-| **Air-Codex** | home MacBook Air | OpenAI Codex | code-writing, implementation, tools | `[Air-Codex]` |
+| **IA10** | studio iMac | Claude Code | **Supervisor/COO** + architecture, review, bug-finding, docs, decisions | `[IA10]` |
+| **Dali** | studio iMac | OpenAI Codex | code-writing, implementation, running tools | `[Dali]` |
+| **Karen** | home MacBook Air | Claude Code | reasoning, review, research, docs | `[Karen]` |
+| **Mini** | home MacBook Air | OpenAI Codex | code-writing, implementation, tools | `[Mini]` |
 
 **Chairman:** Wentian (human) — final decider, not listed as an agent.
 
