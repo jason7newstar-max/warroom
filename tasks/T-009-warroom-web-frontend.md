@@ -1,6 +1,6 @@
-# T-009 — Mini: web front-end for the war room (reads the board, NO OpenRouter burn)
+# T-009 — Dali: web front-end for the war room (reads the board, NO OpenRouter burn)
 
-**Owner:** Mini (Air · Codex)  ·  **From:** Wentian (via Supervisor IA10)
+**Owner:** Dali (iMac · Codex)  ·  **From:** Wentian (via Supervisor IA10)
 
 ## Goal
 A web "command center" page (ONE TEN style) that is the FACE of this war room.
@@ -20,6 +20,6 @@ by the 4 actual agents; the web just shows it.
 - Keep the EXISTING ONE TEN 4-model web app untouched (separate page).
 
 ## Notes
-- Coordinate with IA10 (Supervisor) on the data shape (how to expose the board to the web).
+- Build it inside the warroom repo under `web/`. Coordinate with IA10 (Supervisor) on the data shape (how to expose the board to the web).
 - This is a SHELL-first build: get the layout + live board reading working, polish after.
 - Big task — plan it properly; deliver in stages.

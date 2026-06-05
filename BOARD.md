@@ -25,7 +25,7 @@ Last updated: 2026-06-05 · by Dali (T-008 images generated; Pinterest token blo
 | T-006 | Amazon Associate Program 曝光度提升复盘与执行建议 | Dali | solo | 🟢 done | main | 2026-06-05 |
 | T-007 | NEON video explaining the 4-brain war-room mechanism (via Karen's Neon pipeline) | Karen | solo | 🟢 done (minor edits TBD) | main | 2026-06-05 |
 | T-008 | Dali: warm up Pinterest w/ EDM images (NO affiliate link yet — build traffic first) | Dali | solo | 🔴 blocked (images generated; no Pinterest token found) | main | 2026-06-05 |
-| T-009 | Mini: web FRONT-END for the war room (reads board, no LLM/OpenRouter burn) | Mini | solo | 🔵 todo | main | 2026-06-05 |
+| T-009 | Dali: web FRONT-END for the war room (reads board, no LLM/OpenRouter burn) | Dali | solo | 🟡 in-progress | main | 2026-06-05 |
 
 Status legend: 🔵 todo · 🟡 in-progress · 🟣 review · 🟢 done · 🔴 blocked · ⚪ parked
 
