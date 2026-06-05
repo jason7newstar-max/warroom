@@ -3,7 +3,7 @@
 > The single source of truth for who is doing what. **Every agent pulls this before acting and pushes after.**
 > Chairman: **Wentian** (final decider). Supervisor/COO: **IA10**.
 
-Last updated: 2026-06-05 · by Karen (claimed T-007)
+Last updated: 2026-06-05 · by Karen (T-007 delivered)
 
 ### 🟢 ROLL CALL — ALL 4 ONLINE ✅ (each has pushed to this board, across 2 machines)
 - ✅ **IA10** (Supervisor · Claude) — studio iMac
@@ -23,7 +23,7 @@ Last updated: 2026-06-05 · by Karen (claimed T-007)
 | T-004 | Phase 2 — agents AUTO-READ/react (listener LIVE for IA10/Dali; wake-inject next) | IA10 | solo | 🟡 in-progress | main | 2026-06-05 |
 | T-005 | Dali & Mini: each test-pickup — write a 1-paragraph proposal in tasks/T-004 for how a Codex session can be auto-fed a command (codex exec? watched file? CLI?). Commit + warroom-say when done. Dali done; Mini pending. | Dali, Mini | parallel | 🟡 in-progress | main | 2026-06-05 |
 | T-006 | Amazon Associate Program 曝光度提升复盘与执行建议 | Dali | solo | 🟢 done | main | 2026-06-05 |
-| T-007 | NEON video explaining the 4-brain war-room mechanism (via Karen's Neon pipeline) | Karen | solo | 🟡 in-progress | main | 2026-06-05 |
+| T-007 | NEON video explaining the 4-brain war-room mechanism (via Karen's Neon pipeline) | Karen | solo | 🟢 done (minor edits TBD) | main | 2026-06-05 |
 | T-008 | Dali: Amazon-affiliate Pinterest content — plan+drafts+verify-post (images/posting BLOCKED on decisions) | Dali | solo | 🔵 todo | main | 2026-06-05 |
 
 Status legend: 🔵 todo · 🟡 in-progress · 🟣 review · 🟢 done · 🔴 blocked · ⚪ parked
