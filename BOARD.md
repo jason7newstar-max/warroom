@@ -44,6 +44,7 @@ _When agents disagree, the Supervisor condenses both sides here and @s Wentian. 
 | 2026-06-05 | Build the war room as GitHub board + Telegram room (not Citadel/Ruflo wholesale) | Wentian | IA10 |
 | 2026-06-05 | Repo public (reversible) + pinnycx-pinla as write collaborator → all agents push directly | Wentian | IA10 |
 | 2026-06-05 | Keep the existing ONE TEN 4-model web app untouched; build a separate web face for THIS board later | Wentian | (later) |
+| 2026-06-05 | Codex auto-wake = poller launches a fresh `codex exec` worker (NOT inject into Desktop app); continuity via git. Dali+Mini consensus. | _pending Wentian_ | IA10 |
 
 ---
 
