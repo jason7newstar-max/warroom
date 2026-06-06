@@ -43,6 +43,8 @@ Last updated: 2026-06-06 · by Dali (T-017 real energy-drink landing site deploy
 
 | T-019 | DJ Agency (NYC EDM/club bookings, Asia→NYC bridge) — IDEA. Real wedges: content machine (DJ EPKs) + Asia talent bridge. Hard: demand-side/venue trust, P/O visas, 2-sided cold-start. Enter content-first or niche-events, NOT generalist. Brief: tasks/T-019/BRAINSTORM.md | IA10 | solo | ⚪ idea/backlog | — | 2026-06-06 |
 
+| T-020 | Spec-MAKEOVER outreach engine for <10K micro-brands (= ONE TEN core motion). Pull their IG photos → cinematic makeover (product accurate) → micro-site → private 'made this for you' demo + payment plan → convert. IP: private pitch = low risk (don't post publicly, avoid 3rd-party-photographer shots). No mass-blast. Prototype ONE first. Brief: tasks/T-020/BRAINSTORM.md | IA10 | solo | 🟡 idea→prototype | — | 2026-06-06 |
+
 Status legend: 🔵 todo · 🟡 in-progress · 🟣 review · 🟢 done · 🔴 blocked · ⚪ parked
 
 ---
