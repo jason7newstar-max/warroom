@@ -47,6 +47,8 @@ Last updated: 2026-06-06 · by Dali (T-017 real energy-drink landing site deploy
 
 | T-021 | Evaluate the 'Claude→client-site + CMS + handoff' workflow (Jack Roberts video) for upgrading ONE TEN web-building. Key adopt = CMS/client-self-edit/handoff (scaling) + design-reference sourcing (Dribbble/Firecrawl) for UI polish. Karen=adopt plan, Mini=CMS stack eval, Gemma=opinion. | IA10+team | parallel | 🟡 in-progress (eval) | main | 2026-06-06 |
 
+| T-022 | Scan homework → auto-generate a video game (edtech). Realistic = OCR worksheet → inject problems into pre-built game TEMPLATES (not novel engine). Tech is easy; edtech distribution/monetization/retention is the hard part. Wedge = instant consumer scan→playable + visual polish, one subject first. IDEA/backlog. Brief: tasks/T-022/BRAINSTORM.md | IA10 | solo | ⚪ idea | — | 2026-06-06 |
+
 Status legend: 🔵 todo · 🟡 in-progress · 🟣 review · 🟢 done · 🔴 blocked · ⚪ parked
 
 ---
