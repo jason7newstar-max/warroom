@@ -31,3 +31,6 @@ Sample-accurate timeline sync across takes + command/trigger latency. Mitigate: 
 ## Next step
 1. **Chairman:** plug in + power the Apogee Duet 2 (so it enumerates), and order the ~$20 USB foot pedal.
 2. **IA10:** build M1 in Python; the moment the Duet is visible, validate on the real rig.
+
+## ⭐ Chairman note 2026-06-06 — punch-in PRE-ROLL (M2, from his recording experience)
+When re-recording from line B, do NOT start the backing exactly at B. Start it ~**2 bars earlier — from the middle of the previous line A** — so the singer gets a run-up (rides into the right rhythm/pitch) before the punch point. Record through the pre-roll; the lead-in is **trimmed in editing**. This also SOLVES the trigger-latency concern: the pre-roll padding absorbs any pedal/command latency, and the extra head is cut later. → M2 punch-in = (line B start) − (2 bars / mid-line-A) pre-roll → seek → arm → record → mark trim point at B.
