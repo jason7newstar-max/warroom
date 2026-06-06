@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Free Preview Site</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="preview" data-preview>
+    <p class="eyebrow">Free 7-day preview</p>
+    <h1>Your cinematic brand preview is live.</h1>
+    <p class="lead">This is the client site content. Replace this section with the real demo page. The expiry script will swap the page after the trial window closes.</p>
+    <a class="btn" href="mailto:pinlastudio@gmail.com?subject=Keep%20my%20preview%20live">Keep this live</a>
+  </main>
+
+  <template id="expired-template">
+    <main class="expired">
+      <p class="eyebrow">Preview expired</p>
+      <h1>This preview expired.</h1>
+      <p class="lead">Upgrade to keep it live for <strong>$9.99/mo</strong>. Your page, visuals, and hosting can be restored immediately.</p>
+      <a class="btn" href="mailto:pinlastudio@gmail.com?subject=Upgrade%20my%20preview">Upgrade to keep it live</a>
+    </main>
+  </template>
+
+  <script>
+    window.ONE_TEN_PREVIEW = {
+      deployedAt: "2026-06-06T00:00:00-04:00",
+      expiresAfterDays: 7
+    };
+  </script>
+  <script src="expiry.js"></script>
+</body>
+</html>
