@@ -531,6 +531,8 @@ h1 {
 
 .agent-card {
   position: absolute;
+  display: flex;
+  flex-direction: column;
   width: min(292px, 50%);
   min-height: 258px;
   padding: 18px;
@@ -628,10 +630,8 @@ h1 {
 }
 
 .agent-meta {
-  position: absolute;
-  left: 18px;
-  right: 18px;
-  bottom: 18px;
+  margin-top: auto;
+  padding-top: 14px;
   display: flex;
   justify-content: space-between;
   gap: 10px;

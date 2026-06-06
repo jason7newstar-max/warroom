@@ -20,13 +20,13 @@ const worldviewDeck = document.querySelector("#worldview-deck");
 const worldviewSolo = document.querySelector("#worldview-solo");
 
 const AGENT_META = {
-  IA10: { id: "IA10", initials: "IA", avatar: "ia10_work1.png", role: "Supervisor / COO", engine: "Claude Code", machine: "studio iMac",
+  IA10: { id: "IA10", initials: "IA", avatar: "ia10_work1.png", role: "Supervisor / COO", engine: "Claude Code", machine: "Opus 4.8",
           frames: ["ia10_work1.png","ia10_work2.png","ia10_work3.png","ia10_work4.png","ia10_alt1.png","ia10_alt2.png","ia10_alt3.png","ia10_alt4.png"] },
-  Karen: { id: "Karen", initials: "KA", avatar: "karen_work1.png", role: "Reasoning / review", engine: "Claude Code", machine: "home MacBook Air",
+  Karen: { id: "Karen", initials: "KA", avatar: "karen_work1.png", role: "Reasoning / review", engine: "Claude Code", machine: "Opus 4.8",
           frames: ["karen_work1.png","karen_work2.png","karen_work3.png","karen_work4.png"] },
-  Mini: { id: "Mini", initials: "MI", avatar: "mini_work1.png", role: "Implementation", engine: "OpenAI Codex", machine: "home MacBook Air",
+  Mini: { id: "Mini", initials: "MI", avatar: "mini_work1.png", role: "Implementation", engine: "OpenAI Codex", machine: "GPT-5.5",
           frames: ["mini_work1.png","mini_work2.png","mini_work3.png","mini_work4.png"] },
-  Dali: { id: "Dali", initials: "DA", avatar: "dali.png", role: "Implementation", engine: "OpenAI Codex", machine: "studio iMac",
+  Dali: { id: "Dali", initials: "DA", avatar: "dali.png", role: "Implementation", engine: "OpenAI Codex", machine: "GPT-5.5",
           frames: ["dali.png"] }
 };
 
