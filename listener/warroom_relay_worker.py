@@ -96,6 +96,7 @@ def _clean_gemma(raw):
     reasoning-looking lines and keep the last substantive paragraph."""
     import re
     t = (raw or "").strip()
+    t = re.sub(r"\x1b\[[0-9;]*[A-Za-z]", "", t)   # strip ANSI terminal codes ollama leaks (e.g. \x1b[K)
     m = list(re.finditer(r"答案\s*[:：]\s*", t))
     if m:
         t = t[m[-1].end():].strip()
