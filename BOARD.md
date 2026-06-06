@@ -34,6 +34,8 @@ Last updated: 2026-06-05 · by Dali (T-009 web front-end cinematic Vercel-ready 
 
 | T-014 | Amazon Influencer 带货视频流水线 (PINLA/ONE TEN storefront, festival niche). Pipeline: real product img → Dali natural 16:9 cinematic scene → HyperFrames 9:16 video (centered, SAFE-ZONE captions, rotate templates) → Chrome Riddle BGM → ~/Downloads → Wentian uploads. **DONE: batch of 5 (2 Alani + 3 Celsius) in ~/Downloads/T014_v2_01-05.mp4, frames _batch_frames.png.** Pipeline reusable. Brief: tasks/T-014/BRIEF.md | IA10→Dali | solo | 🟢 done | main | 2026-06-06 |
 
+| T-015 | AI 自动录音环节 (scoped): standalone voice/foot-pedal-controlled multi-take VOCAL recorder (NOT mix/master — that→AI later). Build from scratch (Python prototype→Swift), drive Apogee Duet 2 via CoreAudio. Gear: iMac + Neumann TLM103 + Duet2. War-room brainstorm: Karen=landscape, Mini=design, Dali=tech+audio-IO spike, Gemma=3rd opinion, IA10=synth+Python MVP. Brief: tasks/T-015/BRIEF.md | IA10+team | parallel | 🟡 in-progress (brainstorm) | main | 2026-06-06 |
+
 Status legend: 🔵 todo · 🟡 in-progress · 🟣 review · 🟢 done · 🔴 blocked · ⚪ parked
 
 ---
