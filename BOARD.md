@@ -49,6 +49,8 @@ Last updated: 2026-06-06 · by Dali (T-017 real energy-drink landing site deploy
 
 | T-022 | Scan homework → auto-generate a video game (edtech). Realistic = OCR worksheet → inject problems into pre-built game TEMPLATES (not novel engine). Tech is easy; edtech distribution/monetization/retention is the hard part. Wedge = instant consumer scan→playable + visual polish, one subject first. IDEA/backlog. Brief: tasks/T-022/BRAINSTORM.md | IA10 | solo | ⚪ idea | — | 2026-06-06 |
 
+| T-023 | Idea-mining engine: mine startup/hackathon idea repositories (Devpost, YC RFS, Product Hunt, Red Bull Basement, MLH) → filter for what ONE TEN can build fast → build OWN execution → commercialize. IP: ideas NOT copyrightable; can build your own version (don't copy code/name/logo/design/patents). Moat = execution speed. Ties [[project_plan_c]]. | IA10 | solo | ⚪ idea | — | 2026-06-06 |
+
 Status legend: 🔵 todo · 🟡 in-progress · 🟣 review · 🟢 done · 🔴 blocked · ⚪ parked
 
 ---
