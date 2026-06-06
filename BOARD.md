@@ -38,6 +38,8 @@ Last updated: 2026-06-05 · by Dali (T-009 web front-end cinematic Vercel-ready 
 
 | T-016 | Productize the QUANTUM CORE desktop pet & SELL it (new business project). Interstellar black-hole visual + switchable skins + talk-to-it AI. KEY decision = the 'brain' for customers (BYO-key / local model / hosted). Idea stage, behind active builds. Brief: tasks/T-016/BRAINSTORM.md | IA10 | solo | ⚪ idea | — | 2026-06-06 |
 
+| T-018 | B2B outreach: pitch energy-drink brands (Celsius/Alani + mid-size DTC) for CREATIVE CONTENT partnership (cinematic videos/images/micro-sites/original BGM = ONE TEN COMPANY services). Lead with spec work already made. Right door = brand marketing/social/influencer-partnerships, NOT customer service. Karen=contacts+pitch-case research, Gemma=3rd view, IA10=offer+cold-email+portfolio. | IA10+team | parallel | 🟡 in-progress (research) | main | 2026-06-06 |
+
 Status legend: 🔵 todo · 🟡 in-progress · 🟣 review · 🟢 done · 🔴 blocked · ⚪ parked
 
 ---
