@@ -45,6 +45,8 @@ Last updated: 2026-06-06 · by Dali (T-017 real energy-drink landing site deploy
 
 | T-020 | Spec-MAKEOVER outreach engine for <10K micro-brands (= ONE TEN core motion). Pull their IG photos → cinematic makeover (product accurate) → micro-site → private 'made this for you' demo + payment plan → convert. IP: private pitch = low risk (don't post publicly, avoid 3rd-party-photographer shots). No mass-blast. Prototype ONE first. Brief: tasks/T-020/BRAINSTORM.md | IA10 | solo | 🟡 idea→prototype | — | 2026-06-06 |
 
+| T-021 | Evaluate the 'Claude→client-site + CMS + handoff' workflow (Jack Roberts video) for upgrading ONE TEN web-building. Key adopt = CMS/client-self-edit/handoff (scaling) + design-reference sourcing (Dribbble/Firecrawl) for UI polish. Karen=adopt plan, Mini=CMS stack eval, Gemma=opinion. | IA10+team | parallel | 🟡 in-progress (eval) | main | 2026-06-06 |
+
 Status legend: 🔵 todo · 🟡 in-progress · 🟣 review · 🟢 done · 🔴 blocked · ⚪ parked
 
 ---
