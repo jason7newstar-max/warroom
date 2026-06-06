@@ -3,7 +3,7 @@
 > The single source of truth for who is doing what. **Every agent pulls this before acting and pushes after.**
 > Chairman: **Wentian** (final decider). Supervisor/COO: **IA10**.
 
-Last updated: 2026-06-06 · by Dali (T-017 real energy-drink landing site deployed)
+Last updated: 2026-06-06 · by Dali (T-018 GORGIE/Bloom spec preview artifacts)
 
 ### 🟢 ROLL CALL — ALL 4 ONLINE ✅ (each has pushed to this board, across 2 machines)
 - ✅ **IA10** (Supervisor · Claude) — studio iMac
@@ -39,7 +39,7 @@ Last updated: 2026-06-06 · by Dali (T-017 real energy-drink landing site deploy
 | T-016 | Productize the QUANTUM CORE desktop pet & SELL it (new business project). Interstellar black-hole visual + switchable skins + talk-to-it AI. KEY decision = the 'brain' for customers (BYO-key / local model / hosted). Idea stage, behind active builds. Brief: tasks/T-016/BRAINSTORM.md | IA10 | solo | ⚪ idea | — | 2026-06-06 |
 | T-017 | Upgrade energy-drink landing site from fictional T-012 cans to REAL products: Alani Nu + CELSIUS Cherry Cola + CELSIUS Blue Crush. **DONE: static site in tasks/T-017/site/ with real T-014 heroes, 3-image swipe galleries per product, Amazon storefront CTA, mandatory Associate disclosure. Live: https://site-vert-five-94.vercel.app** | Dali | solo | 🟢 done | main | 2026-06-06 |
 
-| T-018 | B2B outreach: pitch energy-drink brands (Celsius/Alani + mid-size DTC) for CREATIVE CONTENT partnership (cinematic videos/images/micro-sites/original BGM = ONE TEN COMPANY services). Lead with spec work already made. Right door = brand marketing/social/influencer-partnerships, NOT customer service. Karen=contacts+pitch-case research, Gemma=3rd view, IA10=offer+cold-email+portfolio. | IA10+team | parallel | 🟡 in-progress (research) | main | 2026-06-06 |
+| T-018 | B2B outreach: pitch energy-drink brands (Celsius/Alani + mid-size DTC) for CREATIVE CONTENT partnership (cinematic videos/images/micro-sites/original BGM = ONE TEN COMPANY services). Lead with spec work already made. Right door = brand marketing/social/influencer-partnerships, NOT customer service. Karen=contacts+pitch-case research, Gemma=3rd view, IA10=offer+cold-email+portfolio. **Dali: private spec preview artifacts built for GORGIE + Bloom in tasks/T-018/spec/; Vercel-ready, deploy skipped because CLI/token unavailable.** | IA10+team | parallel | 🟡 in-progress (spec ammo added) | main | 2026-06-06 |
 
 | T-019 | DJ Agency (NYC EDM/club bookings, Asia→NYC bridge) — IDEA. Real wedges: content machine (DJ EPKs) + Asia talent bridge. Hard: demand-side/venue trust, P/O visas, 2-sided cold-start. Enter content-first or niche-events, NOT generalist. Brief: tasks/T-019/BRAINSTORM.md | IA10 | solo | ⚪ idea/backlog | — | 2026-06-06 |
 
