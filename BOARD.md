@@ -41,6 +41,8 @@ Last updated: 2026-06-06 · by Dali (T-017 real energy-drink landing site deploy
 
 | T-018 | B2B outreach: pitch energy-drink brands (Celsius/Alani + mid-size DTC) for CREATIVE CONTENT partnership (cinematic videos/images/micro-sites/original BGM = ONE TEN COMPANY services). Lead with spec work already made. Right door = brand marketing/social/influencer-partnerships, NOT customer service. Karen=contacts+pitch-case research, Gemma=3rd view, IA10=offer+cold-email+portfolio. | IA10+team | parallel | 🟡 in-progress (research) | main | 2026-06-06 |
 
+| T-019 | DJ Agency (NYC EDM/club bookings, Asia→NYC bridge) — IDEA. Real wedges: content machine (DJ EPKs) + Asia talent bridge. Hard: demand-side/venue trust, P/O visas, 2-sided cold-start. Enter content-first or niche-events, NOT generalist. Brief: tasks/T-019/BRAINSTORM.md | IA10 | solo | ⚪ idea/backlog | — | 2026-06-06 |
+
 Status legend: 🔵 todo · 🟡 in-progress · 🟣 review · 🟢 done · 🔴 blocked · ⚪ parked
 
 ---
