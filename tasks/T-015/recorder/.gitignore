@@ -1,0 +1,5 @@
+.venv/
+sessions/
+test_assets/
+*.pyc
+__pycache__/
