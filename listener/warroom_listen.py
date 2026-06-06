@@ -121,6 +121,32 @@ def relay_dispatch(agent, message):
         time.sleep(1)
     print(f"[listener] relay push failed for {agent}")
 
+# ── LIVE status: write live/now.json the moment an agent is dispatched, so the
+# web front-end can show "who's on what NOW" (zero LLM/token; front-end polls it).
+LIVE_FILE = os.path.join(RELAY_REPO, "live", "now.json")
+
+def mark_live(agent, message):
+    import json as _j
+    os.makedirs(os.path.dirname(LIVE_FILE), exist_ok=True)
+    try:
+        data = _j.load(open(LIVE_FILE)) if os.path.exists(LIVE_FILE) else {}
+    except Exception:
+        data = {}
+    data.setdefault("agents", {})
+    data["agents"][agent] = {"task": message[:90], "ts": int(time.time())}
+    data["updated"] = int(time.time())
+    with open(LIVE_FILE, "w") as f:
+        _j.dump(data, f, ensure_ascii=False)
+    for _ in range(2):
+        subprocess.run(["git", "-C", RELAY_REPO, "add", "live/now.json"])
+        subprocess.run(["git", "-C", RELAY_REPO, "-c", "user.name=IA10",
+                        "-c", "user.email=warroom@pinla.local", "commit", "-q",
+                        "-m", f"[live] {agent} → {message[:30]}", "--", "live/now.json"])
+        subprocess.run(["git", "-C", RELAY_REPO, "pull", "--rebase", "-q", "origin", "main"])
+        if subprocess.run(["git", "-C", RELAY_REPO, "push", "-q", "origin", "main"]).returncode == 0:
+            return
+        time.sleep(1)
+
 def load_env():
     d = {}
     for ln in ENV.read_text().splitlines():
@@ -192,6 +218,7 @@ def main():
                                "agent": a, "text": text}
                         (INBOX / f"{a}.jsonl").open("a").write(json.dumps(rec, ensure_ascii=False) + "\n")
                         print(f"[listener] → routed to {a}: {text[:60]}")
+                        mark_live(a, text)                     # update web LIVE panel
                         if a in RELAY_AGENTS:
                             relay_dispatch(a, text)            # remote machine (Air) handles it
                         elif ENGINE.get(a) == "codex":

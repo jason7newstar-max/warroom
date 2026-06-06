@@ -3,8 +3,11 @@ const COMMITS_URL = "https://api.github.com/repos/jason7newstar-max/warroom/comm
 const TREE_URL = "https://api.github.com/repos/jason7newstar-max/warroom/git/trees/main?recursive=1";
 const RAW_BASE = "https://raw.githubusercontent.com/jason7newstar-max/warroom/main/";
 
+const NOW_URL = "https://raw.githubusercontent.com/jason7newstar-max/warroom/main/live/now.json";
+
 const agentRoot = document.querySelector("#agents");
 const outputsRoot = document.querySelector("#outputs");
+const liveRoot = document.querySelector("#live");
 const tasksRoot = document.querySelector("#tasks");
 const activityRoot = document.querySelector("#activity");
 const decisionsRoot = document.querySelector("#decisions");
@@ -380,8 +383,46 @@ async function loadOutputs() {
   }
 }
 
+// LIVE strip — "who's on what NOW". The listener writes live/now.json the moment
+// it dispatches/wakes an agent; we poll it (cache-busted). An agent shows ● working
+// if its dispatch was < 10 min ago, else it has gone quiet. Zero LLM/token.
+function timeAgo(ts) {
+  const s = Math.max(0, Math.floor(Date.now() / 1000 - ts));
+  if (s < 60) return s + "s ago";
+  if (s < 3600) return Math.floor(s / 60) + "m ago";
+  return Math.floor(s / 3600) + "h ago";
+}
+async function loadLive() {
+  if (!liveRoot) return;
+  try {
+    const res = await fetch(NOW_URL + "?t=" + Date.now());
+    if (!res.ok) throw new Error("now " + res.status);
+    const data = await res.json();
+    const agents = data.agents || {};
+    const rows = Object.keys(agents)
+      .map((k) => ({ agent: k, ...agents[k] }))
+      .sort((a, b) => (b.ts || 0) - (a.ts || 0));
+    if (!rows.length) { liveRoot.innerHTML = '<p class="live-empty">Idle — no agent dispatched recently.</p>'; return; }
+    const now = Date.now() / 1000;
+    liveRoot.innerHTML = rows
+      .map((r) => {
+        const working = (now - (r.ts || 0)) < 600;
+        return `<div class="live-row ${working ? "on" : "off"}">
+            <span class="live-dot"></span>
+            <strong>${escapeHtml(r.agent)}</strong>
+            <span class="live-task">${escapeHtml(r.task || "")}</span>
+            <span class="live-when">${escapeHtml(timeAgo(r.ts || 0))}</span>
+          </div>`;
+      })
+      .join("");
+  } catch (e) {
+    liveRoot.innerHTML = '<p class="live-empty">Live status unavailable.</p>';
+  }
+}
+
 async function refresh() {
   loadOutputs();
+  loadLive();
   try {
     let data;
     try {
