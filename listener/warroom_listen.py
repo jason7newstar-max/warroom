@@ -22,6 +22,7 @@ ALIASES = {
     "Dali":  ["dali", "达利", "大力", "达里", "dolly"],
     "Karen": ["karen", "凯伦", "卡伦", "凯琳", "凯伦"],
     "Mini":  ["mini", "迷你", "米妮", "咪你", "mimi"],
+    "Gemma": ["gemma", "杰玛", "吉玛", "gema", "gamma", "加马", "哥马", "捷玛"],
 }
 
 # which engine each agent runs on + how to wake it
@@ -92,6 +93,33 @@ def wake_claude(agent, message):
         print(f"[listener] 🚀 launched claude -p worker for {agent}")
     except Exception as e:
         print(f"[listener] wake_claude err: {e}")
+
+# ── RELAY: for agents hosted on ANOTHER machine (e.g. the Air), don't wake locally —
+# write a work-order into the shared git repo and push it. A relay worker on that
+# machine (warroom_relay_worker.py) pulls + runs it. Only THIS side writes relay/inbox
+# → race-free. Set WARROOM_RELAY_AGENTS="Karen,Mini,Gemma" to route those remotely.
+RELAY_AGENTS = set(a.strip() for a in os.environ.get("WARROOM_RELAY_AGENTS", "").split(",") if a.strip())
+RELAY_REPO = os.path.expanduser(os.environ.get("RELAY_REPO", "~/claude-work/warroom"))
+RELAY_INBOX = os.path.join(RELAY_REPO, "relay", "inbox")
+
+def relay_dispatch(agent, message):
+    import json as _j, random
+    os.makedirs(RELAY_INBOX, exist_ok=True)
+    oid = f"{agent}-{int(time.time())}-{random.randint(1000,9999)}"
+    rel = os.path.join("relay", "inbox", oid + ".json")
+    with open(os.path.join(RELAY_REPO, rel), "w") as f:
+        _j.dump({"id": oid, "agent": agent, "text": message, "ts": int(time.time())},
+                f, ensure_ascii=False)
+    for _ in range(3):
+        subprocess.run(["git", "-C", RELAY_REPO, "add", rel])
+        subprocess.run(["git", "-C", RELAY_REPO, "-c", "user.name=IA10",
+                        "-c", "user.email=warroom@pinla.local", "commit", "-q",
+                        "-m", f"[relay] order {oid}: {message[:40]}", "--", rel])
+        subprocess.run(["git", "-C", RELAY_REPO, "pull", "--rebase", "-q", "origin", "main"])
+        if subprocess.run(["git", "-C", RELAY_REPO, "push", "-q", "origin", "main"]).returncode == 0:
+            print(f"[listener] 📤 relayed → {agent} (remote): {message[:50]}"); return
+        time.sleep(1)
+    print(f"[listener] relay push failed for {agent}")
 
 def load_env():
     d = {}
@@ -164,9 +192,14 @@ def main():
                                "agent": a, "text": text}
                         (INBOX / f"{a}.jsonl").open("a").write(json.dumps(rec, ensure_ascii=False) + "\n")
                         print(f"[listener] → routed to {a}: {text[:60]}")
-                        if ENGINE.get(a) == "codex":
-                            wake_codex(a, text)
-                    say(tok, gid, f"👂 [listener] heard → waking {', '.join(sorted(tgt))}: \"{text[:50]}\"")
+                        if a in RELAY_AGENTS:
+                            relay_dispatch(a, text)            # remote machine (Air) handles it
+                        elif ENGINE.get(a) == "codex":
+                            wake_codex(a, text)                # local Codex worker (Dali)
+                        elif ENGINE.get(a) == "claude" and a != "IA10":
+                            wake_claude(a, text)               # local Claude worker (Karen, if local)
+                        # IA10 = the supervisor session; it reads the group directly, no wake
+                    say(tok, gid, f"👂 [listener] heard → {', '.join(sorted(tgt))}: \"{text[:50]}\"")
             OFFSET_F.write_text(str(offset) if offset is not None else "")
         except Exception as e:
             print("[listener] err:", e); time.sleep(5)
