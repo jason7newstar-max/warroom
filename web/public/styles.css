@@ -891,3 +891,22 @@ h1 {
     grid-template-columns: 1fr;
   }
 }
+
+/* OUTPUTS gallery — agent work products, live from git */
+.outputs-sec { margin: 0 0 6px; }
+.outputs {
+  display: flex; gap: 12px; overflow-x: auto; padding: 6px 2px 14px;
+  scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch;
+}
+.output-card {
+  flex: 0 0 auto; width: 132px; text-decoration: none; scroll-snap-align: start;
+  border: 1px solid rgba(255,255,255,.08); border-radius: 12px; overflow: hidden;
+  background: rgba(255,255,255,.03); transition: transform .25s ease, border-color .25s ease;
+}
+.output-card:hover { transform: translateY(-3px); border-color: rgba(200,162,74,.55); }
+.output-card img { width: 100%; height: 132px; object-fit: cover; display: block; background: #0c0c12; }
+.output-card span {
+  display: block; padding: 7px 9px; font-size: 10.5px; color: #9a9aa6;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.outputs-empty { color: #6a6a72; font-size: 12.5px; padding: 8px 2px; }

@@ -1,7 +1,10 @@
 const BOARD_URL = "https://raw.githubusercontent.com/jason7newstar-max/warroom/main/BOARD.md";
 const COMMITS_URL = "https://api.github.com/repos/jason7newstar-max/warroom/commits?per_page=18";
+const TREE_URL = "https://api.github.com/repos/jason7newstar-max/warroom/git/trees/main?recursive=1";
+const RAW_BASE = "https://raw.githubusercontent.com/jason7newstar-max/warroom/main/";
 
 const agentRoot = document.querySelector("#agents");
+const outputsRoot = document.querySelector("#outputs");
 const tasksRoot = document.querySelector("#tasks");
 const activityRoot = document.querySelector("#activity");
 const decisionsRoot = document.querySelector("#decisions");
@@ -344,7 +347,41 @@ function renderDecisions(decisions) {
     .join("");
 }
 
+// OUTPUTS gallery — what the agents actually PRODUCED. One GitHub tree call,
+// pure client-side (no LLM/token): list every image committed under tasks/, show
+// the newest as thumbnails. Click → full image on raw.githubusercontent.
+async function loadOutputs() {
+  if (!outputsRoot) return;
+  try {
+    const res = await fetch(TREE_URL);
+    if (!res.ok) throw new Error("tree " + res.status);
+    const tree = (await res.json()).tree || [];
+    const imgs = tree
+      .filter((t) => t.type === "blob"
+        && t.path.startsWith("tasks/")
+        && /\.(png|jpe?g|webp)$/i.test(t.path)
+        && !/_posesheet/i.test(t.path))
+      .sort((a, b) => b.path.localeCompare(a.path)) // higher T-number / later path first
+      .slice(0, 14);
+    if (!imgs.length) { outputsRoot.innerHTML = '<p class="outputs-empty">No agent image outputs yet.</p>'; return; }
+    outputsRoot.innerHTML = imgs
+      .map((t) => {
+        const raw = RAW_BASE + t.path.split("/").map(encodeURIComponent).join("/");
+        const file = t.path.split("/").pop();
+        const task = (t.path.match(/tasks\/(T-\d+)/) || [])[1] || "";
+        return `<a class="output-card" href="${raw}" target="_blank" rel="noopener" title="${escapeHtml(t.path)}">
+            <img loading="lazy" src="${raw}" alt="" onerror="this.closest('.output-card').remove()" />
+            <span>${escapeHtml(task)}${task ? " · " : ""}${escapeHtml(file)}</span>
+          </a>`;
+      })
+      .join("");
+  } catch (e) {
+    outputsRoot.innerHTML = '<p class="outputs-empty">Outputs unavailable (GitHub rate limit?).</p>';
+  }
+}
+
 async function refresh() {
+  loadOutputs();
   try {
     let data;
     try {
