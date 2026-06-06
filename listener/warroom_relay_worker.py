@@ -83,15 +83,41 @@ def run_codex(agent, message, ws):
                     task_prompt(agent, message, ws)], cwd=ws)
 
 
+GEMMA_SYS = (
+    "你是 Gemma,运行在文天的 M4 MacBook Air 本地(不是 Google,也不联网)。"
+    "用中文直接给最终答案,最多 3 句话。严禁输出任何思考过程、推理、'Thinking'、"
+    "选项罗列、英文分析或重复。只用这一行格式回复,不要别的:\n答案:<你的话>"
+)
+
+
+def _clean_gemma(raw):
+    """gemma4:12b is a reasoning model that dumps its whole chain-of-thought.
+    Keep only the real answer: prefer text after the last '答案:'; else drop
+    reasoning-looking lines and keep the last substantive paragraph."""
+    import re
+    t = (raw or "").strip()
+    m = list(re.finditer(r"答案\s*[:：]\s*", t))
+    if m:
+        t = t[m[-1].end():].strip()
+    else:
+        paras = [p.strip() for p in t.splitlines() if p.strip()]
+        paras = [p for p in paras if not p.lower().lstrip("*-# ").startswith(
+            ("thinking", "option", "wait", "identify", "platform", "special", "let's", "strictly"))]
+        t = paras[-1] if paras else t
+    return t[:600].strip() or "(no output)"
+
+
 def run_gemma(agent, message, ws):
-    """Gemma = free local model. Answer the message and post it to the war room.
-    Good for quick opinions / a diverse 3rd voice — no Anthropic/OpenAI tokens."""
+    """Gemma = free local model = a diverse 3rd voice / opinion (no Anthropic/OpenAI
+    tokens). It only TALKS — no git, no file edits, no internet. Output is cleaned of
+    the model's verbose reasoning before posting."""
     git(ws, "pull", "--rebase", "origin", "main")
-    r = subprocess.run([OLLAMA_BIN, "run", GEMMA_MODEL, message],
+    prompt = GEMMA_SYS + "\n\n问题:" + message
+    r = subprocess.run([OLLAMA_BIN, "run", GEMMA_MODEL, prompt],
                        capture_output=True, text=True)
-    out = (r.stdout or "").strip() or (r.stderr or "").strip() or "(no output)"
+    raw = (r.stdout or "").strip() or (r.stderr or "").strip() or "(no output)"
     say = os.path.join(ws, "bin", "warroom-say")
-    subprocess.run([say, f"[Gemma] {out[:1400]}"], cwd=ws)
+    subprocess.run([say, f"[Gemma] {_clean_gemma(raw)}"], cwd=ws)
 
 
 RUN = {"claude": run_claude, "codex": run_codex, "gemma": run_gemma}
