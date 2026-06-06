@@ -32,6 +32,8 @@ Last updated: 2026-06-05 · by Dali (T-009 web front-end cinematic Vercel-ready 
 | T-012 | Amazon Associate niche = **ENERGY DRINK** (summer + EDM-festival tie-in). Dali: generate several PRO, ad-quality energy-drink detail/landing product pages + detailed copy. Queued AFTER T-009 storyboard images (one Dali worker). Affiliate-link timing per traffic-first rule. **DONE: 3 pages (Neon Surge / Afterglow Hydra / NightDrive Pulse) + index in tasks/T-012/pages/.** Awaiting Chairman approve + deploy decision. | Dali | solo | 🟣 review | main | 2026-06-05 |
 | T-013 | 写歌 for Suno — analyze **PinLA Studio / Moon1k** channel (9.8K subs, emotional Future Bass, hits=warm romantic uplifting) → next-song direction + lyrics + MV. 4 agents write lyrics. **ANALYSIS.md ✅ (IA10 first pass)**; awaiting Chairman direction → then lyrics. | IA10→team | solo→parallel | 🟡 in-progress (research) | main | 2026-06-05 |
 
+| T-014 | Amazon Influencer 带货视频流水线 (PINLA storefront, festival/夜场). Real product img (Alani+Celsius sourced ✅) → Dali AI cinematic night bg (image-edit, keep product accurate) → HyperFrames video (rotate templates) → Chrome Riddle BGM → MP4 to ~/Downloads → Wentian uploads. 1 Alani sample→batch 5. Brief: tasks/T-014/BRIEF.md | IA10→Dali | solo | 🟡 in-progress | main | 2026-06-06 |
+
 Status legend: 🔵 todo · 🟡 in-progress · 🟣 review · 🟢 done · 🔴 blocked · ⚪ parked
 
 ---
