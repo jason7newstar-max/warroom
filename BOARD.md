@@ -20,7 +20,7 @@ Last updated: 2026-06-05 · by Dali (T-009 web front-end cinematic Vercel-ready 
 | T-001 | Stand up the war room (board + rules + cross-machine sync) | IA10 | solo | 🟢 done | main | 2026-06-05 |
 | T-002 | DEMO — first pipeline run (pick a small real task to prove relay collab) | _unassigned_ | pipeline | 🔵 todo | — | 2026-06-05 |
 | T-003 | Telegram war-room group + `warroom-say` (post layer) — all 4 agents posting ✅ | IA10 | solo | 🟢 done | main | 2026-06-05 |
-| T-004 | Phase 2 — agents AUTO-READ/react (listener LIVE for IA10/Dali; wake-inject next) | IA10 | solo | 🟡 in-progress | main | 2026-06-05 |
+| T-004 | Phase 2 — agents AUTO-READ/react. **DONE: all 4 (IA10/Dali/Karen/Mini) auto-wake live on the studio iMac**, each in its own git checkout (AGENT_WS map) so no collisions. Tested: Karen+Mini posted "online". (Air-offload via git-relay = optional future.) | IA10 | solo | 🟢 done | main | 2026-06-05 |
 | T-005 | Dali & Mini: each test-pickup — write a 1-paragraph proposal in tasks/T-004 for how a Codex session can be auto-fed a command (codex exec? watched file? CLI?). Commit + warroom-say when done. Dali done; Mini pending. | Dali, Mini | parallel | 🟡 in-progress | main | 2026-06-05 |
 | T-006 | Amazon Associate Program 曝光度提升复盘与执行建议 | Dali | solo | 🟢 done | main | 2026-06-05 |
 | T-007 | NEON video explaining the 4-brain war-room mechanism (via Karen's Neon pipeline) | Karen | solo | 🟢 done (minor edits TBD) | main | 2026-06-05 |
