@@ -14,11 +14,20 @@ const worldviewDeck = document.querySelector("#worldview-deck");
 const worldviewSolo = document.querySelector("#worldview-solo");
 
 const AGENT_META = {
-  IA10: { id: "IA10", initials: "IA", avatar: "ia10_work.png", role: "Supervisor / COO", engine: "Claude Code", machine: "studio iMac" },
-  Karen: { id: "Karen", initials: "KA", avatar: "karen_work.png", role: "Reasoning / review", engine: "Claude Code", machine: "home MacBook Air" },
-  Mini: { id: "Mini", initials: "MI", avatar: "mini_work.png", role: "Implementation", engine: "OpenAI Codex", machine: "home MacBook Air" },
-  Dali: { id: "Dali", initials: "DA", avatar: "dali.png", role: "Implementation", engine: "OpenAI Codex", machine: "studio iMac" }
+  IA10: { id: "IA10", initials: "IA", avatar: "ia10_work1.png", role: "Supervisor / COO", engine: "Claude Code", machine: "studio iMac",
+          frames: ["ia10_work1.png","ia10_work2.png","ia10_work3.png","ia10_work4.png","ia10_alt1.png","ia10_alt2.png","ia10_alt3.png","ia10_alt4.png"] },
+  Karen: { id: "Karen", initials: "KA", avatar: "karen_work1.png", role: "Reasoning / review", engine: "Claude Code", machine: "home MacBook Air",
+          frames: ["karen_work1.png","karen_work2.png","karen_work3.png","karen_work4.png"] },
+  Mini: { id: "Mini", initials: "MI", avatar: "mini_work1.png", role: "Implementation", engine: "OpenAI Codex", machine: "home MacBook Air",
+          frames: ["mini_work1.png","mini_work2.png","mini_work3.png","mini_work4.png"] },
+  Dali: { id: "Dali", initials: "DA", avatar: "dali.png", role: "Implementation", engine: "OpenAI Codex", machine: "studio iMac",
+          frames: ["dali.png"] }
 };
+
+function pickStart(meta) {
+  const f = meta && meta.frames && meta.frames.length ? meta.frames : [meta.avatar];
+  return f[Math.floor(Math.random() * f.length)];
+}
 
 const WORLDVIEW = [
   {
@@ -230,17 +239,22 @@ async function loadLocalFallback() {
   return { ...(await response.json()), source: "local fallback" };
 }
 
+let avatarTimer = null;
+
 function renderAgents(agents) {
   agentRoot.innerHTML = agents
-    .map(
-      (agent, index) => `
+    .map((agent, index) => {
+      const meta = AGENT_META[agent.id] || AGENT_META[agent.name] || {};
+      const aid = meta.id || agent.id || agent.name || "";
+      const start = pickStart(meta) || agent.avatar;
+      return `
         <article class="agent-card tilt-${index + 1}">
           <div class="agent-topline">
             <span>${escapeHtml(agent.role)}</span>
             <span>${agent.online ? "online" : "offline"}</span>
           </div>
           <div class="avatar">
-            <img src="/avatars/${escapeHtml(agent.avatar)}" alt="" onerror="this.remove()" />
+            <img data-agent="${escapeHtml(aid)}" src="/avatars/${escapeHtml(start)}" style="transition:opacity .5s ease" alt="" onerror="this.remove()" />
             <span>${escapeHtml(agent.initials)}</span>
           </div>
           <div>
@@ -252,9 +266,32 @@ function renderAgents(agents) {
             <span>${escapeHtml(agent.currentTask)}</span>
           </div>
         </article>
-      `
-    )
+      `;
+    })
     .join("");
+  cycleAvatars();
+}
+
+// Gently CYCLE each work-panel avatar through its storyboard frames — a soft
+// crossfade every few seconds (no hard flash), staggered so they don't all flip
+// at once. Chairman picked "rotate, don't make me choose".
+function cycleAvatars() {
+  if (avatarTimer) clearInterval(avatarTimer);
+  const imgs = Array.from(agentRoot.querySelectorAll("img[data-agent]"));
+  avatarTimer = setInterval(() => {
+    imgs.forEach((img, i) => {
+      const meta = AGENT_META[img.dataset.agent];
+      const frames = meta && meta.frames ? meta.frames : null;
+      if (!frames || frames.length < 2) return;
+      setTimeout(() => {
+        const cur = (img.getAttribute("src") || "").split("/").pop();
+        let next = cur;
+        for (let n = 0; n < 6 && next === cur; n++) next = frames[Math.floor(Math.random() * frames.length)];
+        img.style.opacity = "0";
+        setTimeout(() => { img.src = "/avatars/" + next; img.style.opacity = "1"; }, 500);
+      }, i * 600);
+    });
+  }, 5200);
 }
 
 function renderTasks(tasks) {
