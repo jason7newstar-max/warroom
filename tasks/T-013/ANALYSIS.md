@@ -7,38 +7,49 @@
 ## What it is
 A virtual-artist music channel. Every track is **Moon1k**, an emotional **Future Bass** project made with Suno. English-language, 2–3 min radio-length, polished descriptions (Track / Artist / Genre / About), explicitly courting **"cinematic visuals, storytelling edits, sync"** use.
 
-## Performance data (views)
+## Performance data (views) — FULL ranking (corrected)
 | Track | Views | Date | Genre tag |
 |------|------:|------|-----------|
-| **Just You and Me** | **134,861** | 2025-09-14 | Future Bass / Chill EDM / Melodic Pop |
-| **Runnin' Toward You** | 84,505 | 2025-08-27 | (romantic uplifting) |
-| **Open Your Heart** | 70,083 | 2025-11-07 | Future Bass / Emotional EDM / Melodic Chill |
-| Be All Right | 20,445 | 2025-09-25 | uplifting |
-| Satisfy | 15,666 | 2026-04-22 | Future Bass / Chill EDM / **Dark Pop** |
-| Your Silence Is Too Loud | 8,744 | 2026-03-19 | Future Bass / Ambient / Emotional |
-| Emotional | 8,225 | 2025-11-23 | — |
-| Hover to Orion | 2,048 | 2026-03-23 | (abstract/cosmic) |
-| *non-music (AI Tools / Thanksgiving)* | <2k | — | underperform |
+| **🚀 Endless Dream** | **1,396,472** | **2025-06-11** | **Dreamwave / Future Bass / Cinematic EDM** |
+| Just You and Me | 134,861 | 2025-09-14 | Future Bass / Chill EDM / Melodic Pop |
+| Linger | 123,078 | — | Future Bass |
+| Thunder Circle | 88,366 | — | Future Bass |
+| Runnin' Toward You | 84,505 | 2025-08-27 | romantic uplifting |
+| I Don't Wanna Leave | 82,372 | — | — |
+| Let's Go Back | 80,117 | — | — |
+| Into the Fire | 77,280 | — | — |
+| Open Your Heart | 70,083 | 2025-11-07 | Future Bass / Emotional EDM |
+| Satisfy | 15,666 | 2026-04-22 | Future Bass / **Dark Pop** |
+| Hover to Orion | 2,048 | 2026-03-23 | abstract/cosmic |
+
+> ⚠️ CORRECTION: first pass only sorted recent uploads and missed the real breakout. **Endless Dream (1.4M) is 10× the next track** — the single most important data point.
+
+## 🚀 The breakout: Endless Dream (1.4M) — what made it explode
+- **Genre: Dreamwave / Future Bass / Cinematic EDM** — dreamier & more atmospheric than the warm-romantic cluster.
+- **Theme:** "a dreamlike audiovisual experience drifting between fantasy and memory… set in the subconscious itself. Inspired by lucid dreams, fading memories, and **endless longing**." Time stretching, reality dissolving.
+- **The MV did the heavy lifting:** the description is ALL about the **AI-generated surreal visuals** — surreal landscapes, floating lights, emotional tones. The video spectacle, not just the song, is what carried it to 1.4M.
+- Uploaded **2025-06-11** (~a year ago, June — seasonally similar to now).
+- Has a LANDR distribution link (streaming/download) → monetized beyond YT.
 
 ## Patterns (what works)
-1. **Signature = emotional Future Bass** — lush synths, cinematic textures, uplifting, heartfelt. This IS the brand. Stay in lane.
-2. **The 70K–134K hits are all WARM, ROMANTIC, UPLIFTING "connection" songs** — *Just You and Me*, *Runnin' Toward You*, *Open Your Heart*. Direct emotional love/togetherness + euphoric lift = the viral formula.
-3. **Direct, simple, emotional English titles win** ("you and me", "open your heart") vs abstract/cosmic ("Hover to Orion" = 2K).
-4. Darker/melancholy still decent (*Satisfy* 15K, *Your Silence* 8.7K) but not the mega-hits.
-5. Audience comes for **Moon1k music**, not vlogs (non-music posts flop) → keep the channel pure music.
-6. Descriptions sell the **edit/sync use-case** → built for TikTok/Reels storytelling edits → that's the virality engine.
+1. **Two success tiers:** (a) the **1.4M breakout = Dreamwave + surreal AI MV + longing/dream/memory**; (b) a reliable **77K–134K cluster = warm romantic Future Bass** (Just You and Me, Linger, Runnin', etc.).
+2. **The mega-ceiling is the DREAM/surreal-visual lane, not the warm-romantic one.** The breakout's engine was the jaw-dropping AI-generated surreal MV + dreamy longing tone.
+3. Signature sound throughout = **emotional/cinematic Future Bass**. Stay in this sonic family.
+4. Abstract/cosmic *titles* flop (Hover to Orion 2K) — but Endless Dream proves "dreamy" works when the VISUALS deliver. So: dreamy theme YES, but the MV must be spectacular.
+5. Keep the channel pure music (non-music posts flop). Descriptions sell edit/sync use → Reels/TikTok engine.
 
-## 🎯 Proposed next-song brief (IA10 rec — for Chairman to confirm/steer)
-**Strategy: this song = the "push past 10K" play.** Lean HARD into the proven 134K formula, plus a timely hook.
+## 🎯 Proposed next-song brief (IA10 rec — REVISED around the 1.4M model)
+**Strategy: target the Endless Dream ceiling, not the 134K floor.** Recreate the breakout formula: dreamy cinematic Future Bass + a stunning AI-generated surreal MV + a theme of dream/memory/longing. Plays directly to Chairman's gen-AI visual toolkit (Higgsfield / Flow / etc.).
 
-- **Genre/sound:** Emotional **Future Bass / Melodic Pop**, uplifting + cinematic — the *Just You and Me* lane. Big euphoric drop, lush supersaws, vocal chops, heartfelt topline.
-- **Theme/angle:** warm romantic connection **+ summer-night / festival energy** (it's June; also reuses the EDM-festival visual world from T-012). "Us, the lights, the last song of the night, don't let go." Hopeful, euphoric, a little bittersweet.
-- **Title options (simple/direct/emotional):** *Don't Let Go* · *Last Summer Night* · *Closer Than This* · *Hold On to Me* · *Light On You* · *Stay the Night*.
-- **MV/剧情:** cinematic night-romance storytelling edit — neon, festival/rooftop, two people, golden-hour→night→dawn arc. AI-generated visuals (Chairman's toolkit), built for Reels/TikTok edits.
-- **Suno:** chirp-fenix (v5.5); style prompt = "emotional future bass, melodic pop, lush supersaw synths, vocal chops, euphoric drop, cinematic, heartfelt female/male vocal, 90–100 BPM."
+- **Genre/sound:** **Dreamwave / Cinematic Future Bass** — lush, atmospheric, emotional, big euphoric-yet-dreamy drop. (Endless Dream lane, not the brighter pop lane.)
+- **Theme/angle:** dream / memory / longing — "drifting between fantasy and memory," time dissolving, chasing something just out of reach. Bittersweet, transcendent. (Optional fresh hook: a summer-night dream, since it's June like the original breakout.)
+- **MV = THE priority** (it's what made 1.4M): surreal AI-generated dreamscape — floating lights, dissolving worlds, lucid-dream imagery, one emotional through-line. Built for the algorithm + edits.
+- **Title options (dreamy but evocative):** *Lucid* · *Slow Dissolve* · *Where Time Stretches* · *Afterglow* · *Paper Moon* · *Drifting* · *Still Dreaming*.
+- **Suno:** chirp-fenix (v5.5); style prompt = "dreamwave, cinematic future bass, lush atmospheric supersaw pads, ethereal vocal chops, emotional euphoric drop, reverb-drenched, longing, 90–100 BPM."
+- Secondary option if Chairman prefers: the warm-romantic lane (Just You and Me model) — safer, reliable 100K-ish, less ceiling.
 
 ## Open for Chairman
-1. 方向认这条"延续爆款公式 + 夏夜/festival 钩子"吗?还是想换情绪(更暗/更抒情/更实验)?
+1. 主打哪条线:**A) Endless Dream 那条(梦核/超现实 MV/思念,冲 1M 天花板)** 还是 **B) 温暖浪漫那条(稳 10 万)**?(我推 A)
 2. 男声 / 女声 / 对唱?
 3. 标题先挑一个,或给个你心里的词。
 > 定了方向,四个人就开写歌词(主歌/副歌/bridge),再交你用 Suno 跑。
