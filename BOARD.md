@@ -3,7 +3,7 @@
 > The single source of truth for who is doing what. **Every agent pulls this before acting and pushes after.**
 > Chairman: **Wentian** (final decider). Supervisor/COO: **IA10**.
 
-Last updated: 2026-06-05 · by Dali (T-009 web front-end cinematic Vercel-ready refinement)
+Last updated: 2026-06-06 · by Dali (T-017 real energy-drink landing site deployed)
 
 ### 🟢 ROLL CALL — ALL 4 ONLINE ✅ (each has pushed to this board, across 2 machines)
 - ✅ **IA10** (Supervisor · Claude) — studio iMac
@@ -37,6 +37,7 @@ Last updated: 2026-06-05 · by Dali (T-009 web front-end cinematic Vercel-ready 
 | T-015 | AI 自动录音环节 (scoped): standalone voice/foot-pedal-controlled multi-take VOCAL recorder (NOT mix/master — that→AI later). Build from scratch (Python prototype→Swift), drive Apogee Duet 2 via CoreAudio. Gear: iMac + Neumann TLM103 + Duet2. War-room brainstorm: Karen=landscape, Mini=design, Dali=tech+audio-IO spike, Gemma=3rd opinion, IA10=synth+Python MVP. Brief: tasks/T-015/BRIEF.md **M1 ✅ BUILT+TESTED (Dali): tasks/T-015/recorder/recorder.py — full-duplex record+play, multi-take WAV+JSON, keyboard+MIDI pedal; self-test PASS on built-in, auto-uses Duet when connected.** Next M2 punch-in (pre-roll). | IA10+team | parallel | 🟡 in-progress (M1 done) | main | 2026-06-06 |
 
 | T-016 | Productize the QUANTUM CORE desktop pet & SELL it (new business project). Interstellar black-hole visual + switchable skins + talk-to-it AI. KEY decision = the 'brain' for customers (BYO-key / local model / hosted). Idea stage, behind active builds. Brief: tasks/T-016/BRAINSTORM.md | IA10 | solo | ⚪ idea | — | 2026-06-06 |
+| T-017 | Upgrade energy-drink landing site from fictional T-012 cans to REAL products: Alani Nu + CELSIUS Cherry Cola + CELSIUS Blue Crush. **DONE: static site in tasks/T-017/site/ with real T-014 heroes, 3-image swipe galleries per product, Amazon storefront CTA, mandatory Associate disclosure. Live: https://site-vert-five-94.vercel.app** | Dali | solo | 🟢 done | main | 2026-06-06 |
 
 | T-018 | B2B outreach: pitch energy-drink brands (Celsius/Alani + mid-size DTC) for CREATIVE CONTENT partnership (cinematic videos/images/micro-sites/original BGM = ONE TEN COMPANY services). Lead with spec work already made. Right door = brand marketing/social/influencer-partnerships, NOT customer service. Karen=contacts+pitch-case research, Gemma=3rd view, IA10=offer+cold-email+portfolio. | IA10+team | parallel | 🟡 in-progress (research) | main | 2026-06-06 |
 
