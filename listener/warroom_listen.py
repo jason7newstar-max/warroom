@@ -35,10 +35,11 @@ def wake_codex(agent, message):
     Non-blocking. The worker pulls, handles the addressed message, commits/pushes,
     and reports via warroom-say. Continuity lives in git, not chat."""
     import subprocess, shlex
+    ws = AGENT_WS.get(agent, CODEX_WS)
     prompt = (
         f"You are {agent}, a worker in the ONE TEN war room. A message in the war-room "
         f"Telegram group is addressed to you:\n\n>>> {message}\n\n"
-        f"Do this, staying strictly within this repo ({CODEX_WS}):\n"
+        f"Do this, staying strictly within this repo ({ws}):\n"
         f"1) `git pull` to get the latest board.\n"
         f"2) Read BOARD.md and any referenced task file in tasks/.\n"
         f"3) Do exactly what the message asks (edit files / write a proposal / etc). "
@@ -53,7 +54,7 @@ def wake_codex(agent, message):
     try:
         subprocess.Popen(
             [CODEX_BIN, "exec", "-s", "danger-full-access", "--skip-git-repo-check", prompt],
-            cwd=CODEX_WS, stdout=logf, stderr=subprocess.STDOUT, start_new_session=True)
+            cwd=ws, stdout=logf, stderr=subprocess.STDOUT, start_new_session=True)
         print(f"[listener] 🚀 launched codex exec worker for {agent}")
     except Exception as e:
         print(f"[listener] wake_codex err: {e}")
@@ -61,13 +62,23 @@ def wake_codex(agent, message):
 CLAUDE_BIN = os.environ.get("CLAUDE_BIN", os.path.expanduser("~/.local/bin/claude"))
 CLAUDE_WS  = os.path.expanduser(os.environ.get("CLAUDE_WS", "~/claude-work/warroom"))
 
+# Per-agent git checkout, so multiple agents can run on ONE machine without
+# colliding on the same working tree. Each agent pulls/commits/pushes its own clone.
+AGENT_WS = {
+    "IA10":  os.path.expanduser("~/claude-work/warroom"),
+    "Karen": os.path.expanduser("~/claude-work/warroom-karen"),
+    "Dali":  os.path.expanduser("~/codex-work/warroom"),
+    "Mini":  os.path.expanduser("~/codex-work/warroom-mini"),
+}
+
 def wake_claude(agent, message):
     """Launch a fresh headless `claude -p` worker for a Claude WORKER agent (e.g. Karen).
     Symmetric to wake_codex; continuity via git, token-frugal (only on a real pickup)."""
     import subprocess
+    ws = AGENT_WS.get(agent, CLAUDE_WS)
     prompt = (
         f"You are {agent}, a worker in the ONE TEN war room. A war-room group message is "
-        f"addressed to you:\n\n>>> {message}\n\nStaying strictly within {CLAUDE_WS}: "
+        f"addressed to you:\n\n>>> {message}\n\nStaying strictly within {ws}: "
         f"git pull; read BOARD.md + any referenced tasks/ file; do exactly what the message asks "
         f"(no destructive commands); then git add -A && git -c user.name=\"{agent}\" "
         f"-c user.email=warroom@pinla.local commit -m \"[{agent}] <what>\" && git push; "
@@ -77,7 +88,7 @@ def wake_claude(agent, message):
     logf.write(f"\n=== wake {agent} (claude) @ {time.strftime('%H:%M:%S')} :: {message[:60]} ===\n"); logf.flush()
     try:
         subprocess.Popen([CLAUDE_BIN, "-p", "--allow-dangerously-skip-permissions", prompt],
-            cwd=CLAUDE_WS, stdout=logf, stderr=subprocess.STDOUT, start_new_session=True)
+            cwd=ws, stdout=logf, stderr=subprocess.STDOUT, start_new_session=True)
         print(f"[listener] 🚀 launched claude -p worker for {agent}")
     except Exception as e:
         print(f"[listener] wake_claude err: {e}")
