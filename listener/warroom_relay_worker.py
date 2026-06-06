@@ -116,8 +116,21 @@ def run_gemma(agent, message, ws):
     r = subprocess.run([OLLAMA_BIN, "run", GEMMA_MODEL, prompt],
                        capture_output=True, text=True)
     raw = (r.stdout or "").strip() or (r.stderr or "").strip() or "(no output)"
-    say = os.path.join(ws, "bin", "warroom-say")
-    subprocess.run([say, f"[Gemma] {_clean_gemma(raw)}"], cwd=ws)
+    ans = _clean_gemma(raw)
+    # Record Gemma's voice into GIT so the Supervisor (IA10) can READ it — the bot
+    # can't see its own group messages, so warroom-say alone is invisible to IA10.
+    vp = os.path.join(ws, "relay", "voices")
+    os.makedirs(vp, exist_ok=True)
+    with open(os.path.join(vp, f"gemma-{int(time.time())}.md"), "w") as f:
+        f.write(f"# Gemma · {time.strftime('%Y-%m-%d %H:%M')}\n\n**Q:** {message}\n\n**A:** {ans}\n")
+    git(ws, "add", "relay/voices")
+    git(ws, "-c", "user.name=Gemma", "-c", "user.email=warroom@pinla.local",
+        "commit", "-q", "-m", f"[Gemma] voice: {ans[:50]}")
+    for _ in range(2):
+        git(ws, "pull", "--rebase", "origin", "main")
+        if git(ws, "push", "-q", "origin", "main").returncode == 0:
+            break
+    subprocess.run([os.path.join(ws, "bin", "warroom-say"), f"[Gemma] {ans}"], cwd=ws)
 
 
 RUN = {"claude": run_claude, "codex": run_codex, "gemma": run_gemma}
