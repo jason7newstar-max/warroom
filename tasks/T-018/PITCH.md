@@ -46,3 +46,16 @@ Send order each: IG/TikTok DM the brand → LinkedIn the founder/social manager 
 - Do NOT blast inferred emails (Karen flagged they're unconfirmed → bounces/spam). Use LinkedIn + partnership forms + IG DM as primary; only email verified addresses.
 - Each brand needs its OWN spec reel (their product) — we have Alani/Celsius; make 1 each for Gorgie/Bloom/etc. as we target them.
 - Chairman approves the exact message + target list before anything goes out (outward-facing, reputational).
+
+## PRICING LADDER (Chairman 2026-06-06)
+- **FREE (promo / loss-leader):** hand-pick a few clients, build free for brand-promo + portfolio + word-of-mouth.
+  - Images: once delivered, theirs to keep.
+  - **Website: 7-DAY live, then auto-EXPIRES** (needs a build: free sites go dead after 7 days → "upgrade to keep this live" page). Creates urgency → conversion.
+- **TIER 1 — $9.99:** affordable entry, **1-year term**. (Default read: $9.99/mo, undercuts Wix/Squarespace ~$16-23/mo; OR $9.99 one-time/yr — CONFIRM with Chairman.) Includes the site + hosting + the makeover image set.
+- **HIGHER TIERS (TBD/detail later):** more service for clients willing to pay more — weekly cinematic videos, image galleries, original BGM/sonic branding, priority. Price up as value grows.
+
+## NEW cold-pitch HOOK (stronger — concrete + urgency)
+> "Made your brand a cinematic makeover + a live site — **free for 7 days** 👉 {spec_link}. Keep it + weekly content from **$9.99/mo**. Want it?"
+
+## BUILD NEEDED: 7-day auto-expiry for free-tier sites
+A free deploy that shows an "expired — upgrade to keep this live" page after 7 days (check deploy date in a tiny edge function / scheduled takedown). = the conversion lever for the free tier.
