@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PHANTOM — Studio</title>
+<style>
+  :root{--gold:#d8b46d;--ink:#f7f4ec;--bg:#0f0f0e;--panel:#181715;--line:rgba(247,244,236,.12);--green:#5ad17a;--red:#f2685f;}
+  *{box-sizing:border-box}
+  body{margin:0;color:var(--ink);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh;
+    background:linear-gradient(180deg,rgba(10,10,14,.62) 0%,rgba(10,10,16,.50) 45%,rgba(8,8,14,.86) 100%),url('/stage.png') center/cover fixed no-repeat;}
+  header{display:flex;align-items:center;justify-content:space-between;padding:16px 22px;border-bottom:1px solid var(--line);backdrop-filter:blur(6px);background:rgba(10,10,14,.35);}
+  .brand{font-weight:800;letter-spacing:.18em;font-size:14px}
+  .brand b{color:var(--gold)}
+  .dev{font-size:12px;color:rgba(247,244,236,.6)}
+  main{max-width:780px;margin:0 auto;padding:26px 22px;}
+  .transport{display:flex;align-items:center;gap:18px;margin-bottom:22px;}
+  .recbtn{width:74px;height:74px;border-radius:50%;border:2px solid var(--line);background:rgba(24,23,21,.55);backdrop-filter:blur(6px);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s;}
+  .recbtn .dot{width:26px;height:26px;border-radius:50%;background:var(--red);transition:.15s;}
+  .recbtn.on{border-color:var(--red);box-shadow:0 0 0 4px rgba(242,104,95,.18);}
+  .recbtn.on .dot{border-radius:5px;width:22px;height:22px;}
+  .status{font-size:14px;color:rgba(247,244,236,.7)}
+  .status b{color:var(--ink)}
+  .montoggle{background:rgba(24,23,21,.55);backdrop-filter:blur(6px);border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:11px 14px;font-weight:700;cursor:pointer;white-space:nowrap;font-size:13px}
+  .montoggle.on{border-color:var(--green);color:var(--green);box-shadow:0 0 0 2px rgba(90,209,122,.2)}
+  .templates{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+  .tpl{position:relative;padding:16px 8px;border:1px solid var(--line);border-radius:12px;background:rgba(20,19,17,.6);backdrop-filter:blur(8px);cursor:pointer;text-align:center;font-weight:800;letter-spacing:.04em;font-size:13px;line-height:1.25;transition:.15s;opacity:.55}
+  .tpl .like{position:absolute;top:5px;right:7px;background:none;border:none;color:rgba(247,244,236,.45);font-size:16px;cursor:pointer;line-height:1;padding:2px}
+  .tpl .like.liked{color:var(--coral)}
+  .tpl:hover{opacity:.85}
+  .tpl.on{opacity:1;border-color:var(--gold);color:var(--gold);box-shadow:0 0 0 2px rgba(216,180,109,.25)}
+  @media(max-width:640px){.templates{grid-template-columns:repeat(2,1fr)}}
+  .revrow{display:flex;align-items:center;gap:12px;margin:2px 0 12px}
+  .revrow input[type=range]{flex:1;accent-color:var(--gold)}
+  .revrow .lab{font-size:12px;color:rgba(247,244,236,.7)}
+  .newbatch{background:transparent;border:1px solid var(--line);color:var(--gold);border-radius:8px;padding:8px 14px;font-weight:700;cursor:pointer;font-size:13px;white-space:nowrap}
+  .combos{display:grid;gap:8px}
+  .combo{padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:rgba(20,19,17,.6);backdrop-filter:blur(8px);cursor:pointer;opacity:.6;transition:.15s}
+  .combo:hover{opacity:.9}
+  .combo.on{opacity:1;border-color:var(--gold);box-shadow:0 0 0 2px rgba(216,180,109,.22)}
+  .combo .nm{font-weight:800;color:var(--gold);letter-spacing:.03em}
+  .combo .ch{font-size:11px;color:rgba(247,244,236,.6);margin-top:3px}
+  .meterwrap{flex:1}
+  .meterlabel{font-size:11px;letter-spacing:.16em;color:rgba(247,244,236,.5);text-transform:uppercase;margin-bottom:6px}
+  .meter{height:14px;border-radius:7px;background:#000;overflow:hidden;border:1px solid var(--line);}
+  .meter .fill{height:100%;width:0%;background:linear-gradient(90deg,var(--green) 0%,var(--green) 70%,#e8c45a 86%,var(--red) 100%);transition:width .07s linear;}
+  h2{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin:24px 0 12px}
+  .take{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:rgba(20,19,17,.6);backdrop-filter:blur(8px);margin-bottom:10px;}
+  .take .nm{font-weight:700}
+  .take .meta{font-size:12px;color:rgba(247,244,236,.55)}
+  .take .sp{flex:1}
+  .take button{background:transparent;border:1px solid var(--line);color:var(--ink);border-radius:7px;padding:7px 12px;font-weight:700;cursor:pointer;font-size:13px}
+  .take button:hover{border-color:var(--gold)}
+  .take button.mix{color:var(--gold);border-color:rgba(216,180,109,.4)}
+  .empty{color:rgba(247,244,236,.4);font-size:14px;padding:8px 2px}
+  audio{height:30px}
+  .backing{display:flex;align-items:center;gap:14px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:rgba(20,19,17,.6);backdrop-filter:blur(8px);margin-bottom:6px;flex-wrap:wrap}
+  .backing input[type=file]{color:rgba(247,244,236,.7);font-size:12px;max-width:230px}
+  .backing label{font-size:12px;color:rgba(247,244,236,.7);display:flex;align-items:center;gap:6px}
+  .fxgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .fx{position:relative;aspect-ratio:1/1;border-radius:14px;overflow:hidden;border:1px solid var(--line);cursor:pointer;opacity:.45;filter:grayscale(.4);transition:.18s;background:linear-gradient(160deg,#1a1810,#0e0d0b)}
+  .fx.on{opacity:1;filter:none;border-color:var(--gold);box-shadow:0 0 0 2px rgba(216,180,109,.3)}
+  .fx img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .fx .lbl{position:absolute;left:0;right:0;bottom:0;z-index:1;padding:10px 12px;font-weight:800;letter-spacing:.08em;font-size:14px;background:linear-gradient(0deg,rgba(0,0,0,.85),rgba(0,0,0,.1) 70%,transparent)}
+  .fx .sub{font-size:10px;color:rgba(247,244,236,.65);font-weight:600;letter-spacing:.02em}
+  @media(max-width:640px){.fxgrid{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">PHANTOM <b>STUDIO</b></div>
+  <div class="dev" id="dev">—</div>
+</header>
+<main>
+  <div class="transport">
+    <button class="recbtn" id="rec" title="Record / Stop"><span class="dot"></span></button>
+    <button class="montoggle" id="mon" title="Live monitor with effects (headphones)">🎧 Monitor</button>
+    <div class="status" id="status">Ready</div>
+    <div class="meterwrap">
+      <div class="meterlabel">Input</div>
+      <div class="meter"><div class="fill" id="fill"></div></div>
+    </div>
+  </div>
+  <h2>Vocal chain — endless 2.7ms combos (tap one)
+    <button class="newbatch" id="newnative" style="margin-left:8px">↻ New 12</button>
+    <button class="newbatch" id="showfaves" style="margin-left:6px">❤ Faves <span id="favcount">0</span></button>
+  </h2>
+  <div class="templates" id="templates"></div>
+
+  <h2>Real-plugin combos — pick one, then Mix a take</h2>
+  <div class="revrow">
+    <span class="lab">Reverb 空间</span>
+    <input type="range" id="revwet" min="0" max="100" value="35">
+    <span class="lab" id="revval" style="width:40px">35%</span>
+    <button class="newbatch" id="newbatch">↻ New 5</button>
+  </div>
+  <div class="combos" id="combos"></div>
+
+  <h2>Backing track</h2>
+  <div class="backing">
+    <input type="file" id="bt" accept="audio/*">
+    <audio id="btaudio" controls></audio>
+    <label><input type="checkbox" id="btauto" checked> play when I record</label>
+  </div>
+
+  <h2>Sound — tap to shape it</h2>
+  <div class="fxgrid" id="fxgrid">
+    <div class="fx on" data-fx="punch"><img src="/fx/punch.png" alt=""><div class="lbl">PUNCH<div class="sub">力度 · 更扎实</div></div></div>
+    <div class="fx" data-fx="warmth"><img src="/fx/warmth.png" alt=""><div class="lbl">WARMTH<div class="sub">暖声 · 更厚</div></div></div>
+    <div class="fx" data-fx="air"><img src="/fx/air.png" alt=""><div class="lbl">AIR<div class="sub">明亮 · 更通透</div></div></div>
+    <div class="fx on" data-fx="space"><img src="/fx/space.png" alt=""><div class="lbl">SPACE<div class="sub">空间 · 混响</div></div></div>
+  </div>
+
+  <h2>Takes</h2>
+  <div id="list"><div class="empty">No takes yet — hit record.</div></div>
+</main>
+<script>
+let recording=false;
+const recBtn=document.getElementById('rec'), statusEl=document.getElementById('status'),
+      fill=document.getElementById('fill'), devEl=document.getElementById('dev'), list=document.getElementById('list');
+
+// level meter: map -60..0 dBFS -> 0..100%
+const templates=document.getElementById('templates'), favcount=document.getElementById('favcount');
+async function refreshFaves(){ try{const d=await(await fetch('/api/favorites')).json(); favcount.textContent=d.count;}catch(e){} }
+async function loadTemplates(){
+  const d=await(await fetch('/api/presets')).json();
+  templates.innerHTML=d.names.map((nm,i)=>`<div class="tpl" data-i="${i}"><button class="like" data-i="${i}" title="Save to favorites">♡</button>${nm}</div>`).join('');
+  templates.querySelectorAll('.tpl').forEach(t=>t.onclick=async()=>{
+    const i=+t.dataset.i;
+    templates.querySelectorAll('.tpl').forEach(x=>x.classList.toggle('on',x===t));
+    await fetch('/api/preset',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({preset:i})});
+  });
+  templates.querySelectorAll('.like').forEach(b=>b.onclick=async(e)=>{
+    e.stopPropagation();
+    const r=await(await fetch('/api/like',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({preset:+b.dataset.i})})).json();
+    b.textContent='♥'; b.classList.add('liked'); if(r.count!=null) favcount.textContent=r.count;
+  });
+}
+document.getElementById('newnative').onclick=async()=>{ templates.style.opacity='.5'; await fetch('/api/newnative',{method:'POST'}); await loadTemplates(); templates.style.opacity=''; };
+document.getElementById('showfaves').onclick=async()=>{ const r=await(await fetch('/api/loadfaves',{method:'POST'})).json(); if(!r.names||!r.names.length){alert('No favorites yet — tap ♡ on combos you like.');return;} await loadTemplates(); };
+loadTemplates(); refreshFaves();
+
+setInterval(async()=>{
+  try{const m=await(await fetch('/api/meter')).json();
+    devEl.textContent = m.native ? ('IN · '+m.device+(m.engine_up?'':' · engine OFF')+(m.preset_name?' · '+m.preset_name:'')) : ('IN · '+m.device);
+    const pct=Math.max(0,Math.min(100,(m.peak_db+60)/60*100));
+    fill.style.width=pct+'%';
+    if(m.native && typeof m.preset==='number'){
+      templates.querySelectorAll('.tpl').forEach(x=>x.classList.toggle('on',+x.dataset.i===m.preset));
+    }
+  }catch(e){}
+},150);
+
+// effect tiles: tap to toggle
+document.querySelectorAll('.fx').forEach(e=>e.onclick=()=>e.classList.toggle('on'));
+function fxState(){const s={};document.querySelectorAll('.fx').forEach(e=>s[e.dataset.fx]=e.classList.contains('on'));return s;}
+// backing track
+const bt=document.getElementById('bt'),btaudio=document.getElementById('btaudio'),btauto=document.getElementById('btauto');
+bt.onchange=()=>{ if(bt.files[0]) btaudio.src=URL.createObjectURL(bt.files[0]); };
+// live monitor (hear effects in the cans)
+const mon=document.getElementById('mon'); let monitoring=false;
+mon.onclick=async()=>{
+  monitoring=!monitoring;
+  const r=await(await fetch('/api/monitor',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({on:monitoring})})).json();
+  monitoring=r.monitor; mon.classList.toggle('on',monitoring);
+  mon.textContent = !r.monitor_ok ? '🎧 n/a' : (monitoring?'🎧 Monitor ON':'🎧 Monitor');
+};
+
+recBtn.onclick=async()=>{
+  if(!recording){
+    await fetch('/api/record',{method:'POST'});
+    recording=true; recBtn.classList.add('on'); statusEl.innerHTML='<b>● Recording…</b>';
+    if(btauto.checked && btaudio.src){ btaudio.currentTime=0; btaudio.play().catch(()=>{}); }
+  }else{
+    const r=await(await fetch('/api/stop',{method:'POST'})).json();
+    recording=false; recBtn.classList.remove('on');
+    btaudio.pause();
+    statusEl.innerHTML='Saved <b>'+r.name+'</b> · '+r.duration+'s · peak '+r.peak_db+' dBFS';
+    loadTakes();
+  }
+};
+
+async function loadTakes(){
+  const d=await(await fetch('/api/takes')).json();
+  if(!d.takes.length){list.innerHTML='<div class="empty">No takes yet — hit record.</div>';return;}
+  list.innerHTML=d.takes.map(t=>`
+    <div class="take">
+      <div>
+        <div class="nm">${t.name}</div>
+        <div class="meta">${t.duration}s${t.mixed?' · mixed ✓':''}</div>
+      </div>
+      <div class="sp"></div>
+      <audio controls src="/api/audio/${t.name}"></audio>
+      ${t.mixed
+        ? `<audio controls src="/api/audio/${t.name.replace('.wav','_mixed.wav')}"></audio>`
+        : `<button class="mix" onclick="mix('${t.name}',this)">✨ Mix</button>`}
+    </div>`).join('');
+}
+// real-plugin combos
+let activeRecipe=null;
+const revwet=document.getElementById('revwet'),revval=document.getElementById('revval'),combosEl=document.getElementById('combos');
+revwet.oninput=()=>revval.textContent=revwet.value+'%';
+async function loadCombos(){
+  const d=await(await fetch('/api/recipes')).json();
+  combosEl.innerHTML=d.recipes.map(r=>`<div class="combo${r.i===activeRecipe?' on':''}" data-i="${r.i}"><div class="nm">${r.name}</div><div class="ch">${r.chain}</div></div>`).join('');
+  combosEl.querySelectorAll('.combo').forEach(c=>c.onclick=async()=>{
+    activeRecipe=+c.dataset.i;
+    combosEl.querySelectorAll('.combo').forEach(x=>x.classList.toggle('on',x===c));
+    const nm=c.querySelector('.nm'); const orig=nm.textContent; nm.textContent='⏳ loading real plugins…';
+    try{ await fetch('/api/livecombo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({recipe:activeRecipe})}); }catch(e){}
+    nm.textContent=orig;
+  });
+}
+document.getElementById('newbatch').onclick=async()=>{await fetch('/api/newbatch',{method:'POST'});activeRecipe=null;loadCombos();};
+loadCombos();
+
+async function mix(name,btn){
+  btn.textContent='…'; btn.disabled=true;
+  const body = (activeRecipe!==null) ? {recipe:activeRecipe, reverb_wet:(+revwet.value)/100} : fxState();
+  await fetch('/api/process/'+name,{method:'POST',
+    headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  loadTakes();
+}
+loadTakes();
+</script>
+</body>
+</html>

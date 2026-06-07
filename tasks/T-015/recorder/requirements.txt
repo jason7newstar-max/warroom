@@ -2,3 +2,4 @@ numpy>=1.26
 sounddevice>=0.5
 soundfile>=0.12
 python-rtmidi>=1.5
+pedalboard>=0.9   # P1 post-record mix chain + hosts external VST3/AU plugins

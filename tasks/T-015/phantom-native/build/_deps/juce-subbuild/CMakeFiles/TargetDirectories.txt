@@ -1,0 +1,3 @@
+/Users/pinnyc/claude-work/warroom/tasks/T-015/phantom-native/build/_deps/juce-subbuild/CMakeFiles/juce-populate.dir
+/Users/pinnyc/claude-work/warroom/tasks/T-015/phantom-native/build/_deps/juce-subbuild/CMakeFiles/edit_cache.dir
+/Users/pinnyc/claude-work/warroom/tasks/T-015/phantom-native/build/_deps/juce-subbuild/CMakeFiles/rebuild_cache.dir

@@ -1,0 +1,7 @@
+{
+	"InstallScripts" : 
+	[
+		"/Users/pinnyc/claude-work/warroom/tasks/T-015/phantom-native/build/_deps/juce-subbuild/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

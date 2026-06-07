@@ -54,6 +54,9 @@ Send order each: IG/TikTok DM the brand → LinkedIn the founder/social manager 
 - **TIER 1 — $9.99:** affordable entry, **1-year term**. (Default read: $9.99/mo, undercuts Wix/Squarespace ~$16-23/mo; OR $9.99 one-time/yr — CONFIRM with Chairman.) Includes the site + hosting + the makeover image set.
 - **HIGHER TIERS (TBD/detail later):** more service for clients willing to pay more — weekly cinematic videos, image galleries, original BGM/sonic branding, priority. Price up as value grows.
 
+## 🎵 CUSTOM JINGLE per merchant (Chairman 2026-06-06) — the flagship differentiator
+Per-brand custom Suno song: feed product name + benefit keywords → write custom lyrics → Suno track → "one listen and it's YOUR brand's music." Refreshing/airy for cafés & energy brands. Goes in the high-value add-on tier. Workflow: I write lyrics + Suno style prompt → Chairman generates in Suno → track drops into the spec site + reel BGM. First sample: tasks/T-018/jingles/SAMPLE-cafe-erzulie.md. Pitch line: "We even wrote your café its own song — hear it on the site." NO other content shop does this.
+
 ## NEW cold-pitch HOOK (stronger — concrete + urgency)
 > "Made your brand a cinematic makeover + a live site — **free for 7 days** 👉 {spec_link}. Keep it + weekly content from **$9.99/mo**. Want it?"
 
