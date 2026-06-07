@@ -115,7 +115,7 @@ def run_gemma(agent, message, ws):
     git(ws, "pull", "--rebase", "origin", "main")
     prompt = GEMMA_SYS + "\n\n问题:" + message
     r = subprocess.run([OLLAMA_BIN, "run", GEMMA_MODEL, prompt],
-                       capture_output=True, text=True)
+                       capture_output=True, text=True, stdin=subprocess.DEVNULL)
     raw = (r.stdout or "").strip() or (r.stderr or "").strip() or "(no output)"
     ans = _clean_gemma(raw)
     # Record Gemma's voice into GIT so the Supervisor (IA10) can READ it — the bot
