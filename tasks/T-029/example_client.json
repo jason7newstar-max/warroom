@@ -1,0 +1,26 @@
+{
+  "brand": "Cafe Mogador",
+  "category": "East Village Moroccan Cafe",
+  "tagline": "Moroccan comfort food, weekend brunch, and neighborhood warmth since 1983.",
+  "about": "Cafe Mogador is a long-running East Village favorite known for tagines, couscous, mezze, and brunch tables that feel casual, lively, and unmistakably New York.",
+  "services": [
+    {
+      "name": "Chicken Tagine",
+      "desc": "Slow-cooked chicken with preserved lemon, olives, herbs, and warm Moroccan spices.",
+      "price": "Dinner favorite"
+    },
+    {
+      "name": "Weekend Brunch",
+      "desc": "Eggs, Moroccan flavors, fresh bread, and the kind of room that fills early.",
+      "price": "Weekend service"
+    },
+    {
+      "name": "Mezze Spread",
+      "desc": "Shareable dips, salads, and small plates built for a relaxed table.",
+      "price": "For the table"
+    }
+  ],
+  "address": "101 St Marks Pl, New York, NY 10009",
+  "hours": "Daily hours vary; check before visiting.",
+  "contact_email": "cafemogador101@gmail.com"
+}
