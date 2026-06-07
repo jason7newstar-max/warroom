@@ -73,8 +73,14 @@ def task_prompt(agent, message, ws):
 
 def run_claude(agent, message, ws):
     git(ws, "pull", "--rebase", "origin", "main")
+    # --strict-mcp-config: headless worker loads ZERO MCP servers. Critical: otherwise this
+    # claude -p loads the SAME telegram plugin as the human's live session on the Air and the
+    # two fight over the single bot connection -> the live session's Telegram MCP keeps dropping
+    # (2026-06-06, diagnosed by Wentian). Board tasks only need git+bash+warroom-say, no MCP.
+    # stdin=DEVNULL: same headless-safety as run_gemma (no controlling tty).
     subprocess.run([CLAUDE_BIN, "-p", "--allow-dangerously-skip-permissions",
-                    task_prompt(agent, message, ws)], cwd=ws)
+                    "--strict-mcp-config",
+                    task_prompt(agent, message, ws)], cwd=ws, stdin=subprocess.DEVNULL)
 
 
 def run_codex(agent, message, ws):
