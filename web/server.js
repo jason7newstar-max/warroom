@@ -194,27 +194,89 @@ function sendFile(res, requestPath) {
   });
 }
 
+
+// Live task list straight from the tasks/ directory (auto-current, newest first) —
+// replaces the stale BOARD.md table so the board always reflects reality.
+function getTasksFromDir() {
+  const tasksDir = path.join(REPO_ROOT, "tasks");
+  let entries = [];
+  try { entries = fs.readdirSync(tasksDir); } catch (e) { return []; }
+  const byId = {};
+  for (const e of entries) {
+    const m = e.match(/^(T-\d+)/);
+    if (!m) continue;
+    const id = m[1];
+    if (!byId[id]) byId[id] = { ID: id, Task: "", Owner: "", Mode: "", Status: "active", Branch: "main" };
+    const full = path.join(tasksDir, e);
+    let text = "";
+    try {
+      const st = fs.statSync(full);
+      if (st.isDirectory()) {
+        const inner = fs.readdirSync(full).filter((f) => f.endsWith(".md"));
+        const pref = inner.find((f) => /BRIEF|README|SPEC/i.test(f)) || inner[0];
+        if (pref) text = fs.readFileSync(path.join(full, pref), "utf8");
+      } else if (e.endsWith(".md")) {
+        text = fs.readFileSync(full, "utf8");
+        if (!byId[id].Task) byId[id].Task = e.replace(/^T-\d+-?/, "").replace(/\.md$/, "").replace(/-/g, " ");
+      }
+    } catch (err) {}
+    if (text && !byId[id]._titled) {
+      const h = text.match(/^#+\s*(.+)$/m);
+      if (h) { byId[id].Task = stripMd(h[1]).slice(0, 90); byId[id]._titled = true; }
+    }
+  }
+  // status + owner from recent git history (single read)
+  try {
+    const log = require("child_process").execFileSync("git", ["log", "-250", "--pretty=format:%s"], { cwd: REPO_ROOT, encoding: "utf8" });
+    const lines = log.split(/\r?\n/);
+    for (const id of Object.keys(byId)) {
+      const hits = lines.filter((l) => l.includes(id));
+      if (hits.length) {
+        const owner = (hits[0].match(/\[(IA10|Karen|Mini|Dali|Gemma|relay)\]/) || [])[1];
+        if (owner && owner !== "relay") byId[id].Owner = owner;
+        if (hits.some((l) => /done|✅|complete/i.test(l))) byId[id].Status = "done";
+      }
+    }
+  } catch (e) {}
+  return Object.values(byId)
+    .map(({ _titled, ...t }) => ({ ...t, Task: t.Task || t.ID }))
+    .sort((a, b) => parseInt(b.ID.slice(2), 10) - parseInt(a.ID.slice(2), 10));
+}
+
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
   if (url.pathname === "/api/state") {
     try {
       const [markdown, activity] = await Promise.all([fetchBoard(), getGitHubCommits()]);
-      sendJson(res, {
-        generatedAt: new Date().toISOString(),
-        source: "github",
-        board: parseBoard(markdown),
-        activity
-      });
+      const board = parseBoard(markdown);
+      board.tasks = getTasksFromDir();
+      if (activity[0] && activity[0].date) board.lastUpdated = activity[0].date;
+      sendJson(res, { generatedAt: new Date().toISOString(), source: "github", board, activity });
     } catch (error) {
       const board = parseBoard(readBoard());
+      board.tasks = getTasksFromDir();
       const activity = await getGitLog();
-      sendJson(res, {
-        generatedAt: new Date().toISOString(),
-        source: "local fallback",
-        board,
-        activity
-      });
+      if (activity[0] && activity[0].date) board.lastUpdated = activity[0].date;
+      sendJson(res, { generatedAt: new Date().toISOString(), source: "local", board, activity });
     }
+    return;
+  }
+  if (url.pathname === "/api/now") {
+    try {
+      const out = require("child_process").execFileSync("git", ["log", "-150", "--pretty=format:%an%x09%at%x09%s"], { cwd: REPO_ROOT, encoding: "utf8" });
+      const agents = {};
+      for (const line of out.split(/\r?\n/)) {
+        const [an, at, ...subj] = line.split("\t");
+        const subject = subj.join("\t");
+        let agent = ["IA10", "Karen", "Mini", "Dali", "Gemma"].find((a) => an === a);
+        const pref = (subject.match(/\[(IA10|Karen|Mini|Dali|Gemma)\]/) || [])[1];
+        if (pref) agent = pref;
+        if (!agent || agents[agent]) continue;
+        const taskm = subject.match(/T-\d+/);
+        agents[agent] = { ts: parseInt(at, 10), task: taskm ? taskm[0] : subject.replace(/^\[[^\]]+\]\s*/, "").slice(0, 44) };
+      }
+      sendJson(res, { agents, generatedAt: new Date().toISOString() });
+    } catch (e) { sendJson(res, { agents: {} }); }
     return;
   }
   sendFile(res, url.pathname);

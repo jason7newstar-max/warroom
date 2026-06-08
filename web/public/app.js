@@ -3,7 +3,7 @@ const COMMITS_URL = "https://api.github.com/repos/jason7newstar-max/warroom/comm
 const TREE_URL = "https://api.github.com/repos/jason7newstar-max/warroom/git/trees/main?recursive=1";
 const RAW_BASE = "https://raw.githubusercontent.com/jason7newstar-max/warroom/main/";
 
-const NOW_URL = "https://raw.githubusercontent.com/jason7newstar-max/warroom/main/live/now.json";
+const NOW_URL = "/api/now";
 
 const agentRoot = document.querySelector("#agents");
 const outputsRoot = document.querySelector("#outputs");
@@ -426,9 +426,9 @@ async function refresh() {
   try {
     let data;
     try {
-      data = await loadRemoteState();
-    } catch (remoteError) {
       data = await loadLocalFallback();
+    } catch (localError) {
+      data = await loadRemoteState();
     }
 
     renderAgents(data.board.agents);
