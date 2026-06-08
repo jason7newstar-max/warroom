@@ -85,6 +85,12 @@
     <button class="newbatch" id="newnative" style="margin-left:8px">↻ New 12</button>
     <button class="newbatch" id="showfaves" style="margin-left:6px">❤ Faves <span id="favcount">0</span></button>
   </h2>
+  <div class="liverow" style="display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin:6px 0 10px">
+    <span class="lab">🚪 Gate <b id="gateval">off</b></span>
+    <input type="range" id="gate" min="-90" max="-20" step="1" value="-90" style="flex:1;min-width:160px">
+    <span class="lab">🌌 Space send <b id="wetval">0%</b></span>
+    <input type="range" id="revwet" min="0" max="100" step="1" value="0" style="flex:1;min-width:160px">
+  </div>
   <div class="templates" id="templates"></div>
 
   <h2>Real-plugin combos — pick one, then Mix a take</h2>
@@ -133,11 +139,15 @@ async function loadTemplates(){
   templates.querySelectorAll('.like').forEach(b=>b.onclick=async(e)=>{
     e.stopPropagation();
     const r=await(await fetch('/api/like',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({preset:+b.dataset.i})})).json();
-    b.textContent='♥'; b.classList.add('liked'); if(r.count!=null) favcount.textContent=r.count;
+    b.textContent='♥'; b.classList.add('liked'); if(r.count!=null) favcount.textContent=r.count; refreshFaves();
   });
 }
 document.getElementById('newnative').onclick=async()=>{ templates.style.opacity='.5'; await fetch('/api/newnative',{method:'POST'}); await loadTemplates(); templates.style.opacity=''; };
 document.getElementById('showfaves').onclick=async()=>{ const r=await(await fetch('/api/loadfaves',{method:'POST'})).json(); if(!r.names||!r.names.length){alert('No favorites yet — tap ♡ on combos you like.');return;} await loadTemplates(); };
+const gateEl=document.getElementById('gate'), gateval=document.getElementById('gateval');
+gateEl.oninput=()=>{ const v=+gateEl.value; gateval.textContent = v<=-90?'off':(v+' dB'); fetch('/api/gate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({db:v})}); };
+const wetEl=document.getElementById('revwet'), wetval=document.getElementById('wetval');
+wetEl.oninput=()=>{ const v=+wetEl.value; wetval.textContent = v+'%'; fetch('/api/revwet',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pct:v})}); };
 loadTemplates(); refreshFaves();
 
 setInterval(async()=>{

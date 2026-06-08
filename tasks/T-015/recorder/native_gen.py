@@ -51,11 +51,11 @@ def wild():
     cthr = round(random.uniform(-30,-8),1); cr = random.choice([1.5,2,3,4,6,8,10])
     catt = random.choice([0.5,1,3,8,20,40]); crel = random.choice([40,80,150,300,500])
     dmhz = random.choice([200,300,400,600,800]); dmg = round(random.uniform(-6,2),1)
-    preshz = random.choice([2000,3000,4000,5000,7000]); presg = round(random.uniform(-3,8),1); presq = round(random.uniform(0.5,3),1)
-    airhz = random.choice([5000,8000,10000,14000,16000]); airg = round(random.uniform(-8,8),1)
+    preshz = random.choice([2000,3000,4000,5000,7000]); presg = round(random.uniform(-4,10),1); presq = round(random.uniform(0.5,3.5),1)
+    airhz = random.choice([5000,8000,10000,14000,16000]); airg = round(random.uniform(-10,10),1)
     lowhz = random.choice([100,150,200,300]); lowg = round(random.uniform(-4,6),1)
     drive = round(random.uniform(0,12),1); makeup = round(random.uniform(0,5),1)
-    rroom = round(random.uniform(0.05,0.95),2); rwet = round(random.uniform(0,0.5),2); rdamp = round(random.uniform(0.05,0.9),2)
+    rroom = round(random.uniform(0.25,0.95),2); rwet = round(random.uniform(0.22,0.70),2); rdamp = round(random.uniform(0.05,0.9),2)
     if random.random() < 0.5: dms,dfb,dmix = random.choice([60,120,250,400,600]), round(random.uniform(0,0.5),2), round(random.uniform(0.05,0.3),2)
     else: dms,dfb,dmix = 0,0.0,0.0
     return [hp,cthr,cr,catt,crel,dmhz,dmg,preshz,presg,presq,airhz,airg,lowhz,lowg,drive,makeup,rroom,rwet,rdamp,dms,dfb,dmix]
@@ -63,6 +63,13 @@ def wild():
 
 def rnd_preset():
     f = archetype() if random.random() < 0.5 else wild()      # 50/50 coherent vs wild
+    f[17] = 0.0   # DRY combo — reverb is a separate Space send (user's Aux-bus model)
+    # NEW character dims so each combo is a DIFFERENT sound, not just EQ on the same voice:
+    lp = random.choice([20000,20000,7000,5000,3500,2200,1600])   # ~30% dark / telephone / lo-fi
+    ch = random.choice([0,0,0.4,0.55,0.7])                        # ~40% doubler / wide
+    cd = round(random.uniform(0.25,0.65),2)
+    if random.random() < 0.30: f[14] = round(random.uniform(8,20),1)   # crank drive (grit) sometimes
+    f = f + [lp, round(ch,2), cd]
     name = f"{random.choice(ADJ)} {random.choice(NOUN)}"
     return name + "|" + "|".join(str(x) for x in f)
 

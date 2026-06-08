@@ -219,6 +219,20 @@ def newnative():
     subprocess.run(["python3", str(Path(__file__).parent.parent / "native_gen.py"), "12"])
     return jsonify(ok=True, names=native_preset_names())
 
+@app.route("/api/gate", methods=["POST"])
+def gate():
+    from flask import request
+    db = float((request.get_json(silent=True) or {}).get("db", -90))
+    if NATIVE: write_ctrl(gate=db)
+    return jsonify(ok=True, db=db)
+
+@app.route("/api/revwet", methods=["POST"])
+def revwet():
+    from flask import request
+    pct = float((request.get_json(silent=True) or {}).get("pct", -1))
+    if NATIVE: write_ctrl(revwet=pct)
+    return jsonify(ok=True, pct=pct)
+
 
 FAVES = PHDIR / "favorites.txt"
 
@@ -238,6 +252,14 @@ def like():
     if line not in existing:
         existing.append(line)
         FAVES.write_text("\n".join(existing) + "\n")
+        # also append a human-readable, timestamped product record (the keeper template)
+        import datetime as _dt
+        tk = line.split("|")
+        names = ["hp","compThr","ratio","att","rel","deMudHz","deMudG","presHz","presG","presQ",
+                 "airHz","airG","lowHz","lowG","driveDb","makeupDb","revRoom","revWet","revDamp","delayMs","delayFb","delayMix"]
+        params = ", ".join(f"{k}={v}" for k,v in zip(names, tk[1:]))
+        with open(PHDIR / "favorites_log.txt","a") as lf:
+            lf.write(f"[{_dt.datetime.now():%Y-%m-%d %H:%M}] {tk[0]} | {params}\n")
     return jsonify(ok=True, name=line.split("|")[0], count=len([l for l in existing if "|" in l]))
 
 

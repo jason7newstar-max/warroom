@@ -37,6 +37,9 @@ struct Preset
     float makeupDb;
     float revRoom, revWet, revDamp;
     float delayMs, delayFb, delayMix;  // slap/echo before the reverb (mix 0 = off)
+    float lpHz = 20000.0f;             // lowpass (dark / telephone / lo-fi); 20000 = off
+    float chorusMix = 0.0f;            // doubler / chorus (thick + wide); 0 = off
+    float chorusDepth = 0.3f;
 };
 
 static const Preset DEFAULT_PRESETS[5] = {
@@ -71,6 +74,9 @@ static void loadPresets()
                                &p.airHz,&p.airGain,&p.lowHz,&p.lowGain,&p.driveDb,&p.makeupDb,
                                &p.revRoom,&p.revWet,&p.revDamp,&p.delayMs,&p.delayFb,&p.delayMix };
             for (int i = 0; i < 22; ++i) *fld[i] = t[i + 1].getFloatValue();
+            if (t.size() > 23) p.lpHz        = t[23].getFloatValue();
+            if (t.size() > 24) p.chorusMix   = t[24].getFloatValue();
+            if (t.size() > 25) p.chorusDepth = t[25].getFloatValue();
             v.push_back (p);
         }
     }
@@ -86,14 +92,17 @@ public:
     std::atomic<bool> monitorOn { true };
     std::atomic<bool> recording { false };   // capture DRY input to disk (record dry, monitor wet)
     std::atomic<bool> dirty { false };       // set when the preset bank is hot-reloaded
+    std::atomic<float> gateThreshDb { -90.0f }; // noise-gate threshold dB (-90 ~ off)
+    std::atomic<float> revWetLive { -1.0f };    // <0 = use preset wet; 0..1 = live dry/wet override
 
     void audioDeviceAboutToStart (AudioIODevice* device) override
     {
         sampleRate = device->getCurrentSampleRate();
         spec = { sampleRate, (uint32) device->getCurrentBufferSizeSamples(), 1 };
         hpf.prepare (spec); comp.prepare (spec); deMud.prepare (spec);
-        presence.prepare (spec); air.prepare (spec); lowShelf.prepare (spec);
+        presence.prepare (spec); air.prepare (spec); lowShelf.prepare (spec); lpf.prepare (spec); chorus.prepare (spec);
         drive.prepare (spec); reverb.setSampleRate (sampleRate);
+        gate.prepare (spec); gate.setRatio (3.0f); gate.setAttack (1.0f); gate.setRelease (200.0f);
         delayLine.prepare (spec); delayLine.reset();
         drive.functionToUse = [] (float x) { return std::tanh (x); };
         recRing.setSize (1, RING); recFifo.reset();
@@ -126,10 +135,16 @@ public:
         presence.coefficients = dsp::IIR::Coefficients<float>::makePeakFilter (sampleRate, p.presHz, p.presQ, Decibels::decibelsToGain (p.presGain));
         air.coefficients      = dsp::IIR::Coefficients<float>::makeHighShelf (sampleRate, p.airHz, 0.7f, Decibels::decibelsToGain (p.airGain));
         lowShelf.coefficients = dsp::IIR::Coefficients<float>::makeLowShelf (sampleRate, p.lowHz > 0 ? p.lowHz : 200.0f, 0.7f, Decibels::decibelsToGain (p.lowGain));
+        lpf.coefficients = dsp::IIR::Coefficients<float>::makeLowPass (sampleRate, jlimit (800.0f, 20000.0f, p.lpHz));
+        useChorus = p.chorusMix > 0.01f;
+        chorus.setMix (jlimit (0.0f, 1.0f, p.chorusMix)); chorus.setDepth (jlimit (0.0f, 1.0f, p.chorusDepth));
+        chorus.setRate (1.1f); chorus.setCentreDelay (7.5f); chorus.setFeedback (0.18f);
         preGain = Decibels::decibelsToGain (p.driveDb);
         useDrive = p.driveDb > 0.1f;
         makeup = Decibels::decibelsToGain (p.makeupDb);
-        Reverb::Parameters rp; rp.roomSize = p.revRoom; rp.wetLevel = p.revWet; rp.dryLevel = 1.0f - p.revWet * 0.5f; rp.damping = p.revDamp; rp.width = 1.0f;
+        gate.setThreshold (gateThreshDb.load());
+        const float liveWet = revWetLive.load(); const float wet = liveWet >= 0.0f ? liveWet : 0.0f;
+        Reverb::Parameters rp; rp.roomSize = 0.72f; rp.wetLevel = wet; rp.dryLevel = 1.0f - wet * 0.4f; rp.damping = 0.32f; rp.width = 1.0f;
         reverb.setParameters (rp);
         dlySamps = jlimit (1, 95000, (int) (p.delayMs / 1000.0f * (float) sampleRate));
         dlyFb = jlimit (0.0f, 0.9f, p.delayFb); dlyMix = jlimit (0.0f, 1.0f, p.delayMix);
@@ -161,9 +176,10 @@ public:
         {
             dsp::AudioBlock<float> blk (buf);
             dsp::ProcessContextReplacing<float> ctx (blk);
-            hpf.process (ctx); comp.process (ctx); deMud.process (ctx);
-            presence.process (ctx); air.process (ctx); lowShelf.process (ctx);
+            gate.process (ctx); hpf.process (ctx); comp.process (ctx); deMud.process (ctx);
+            presence.process (ctx); air.process (ctx); lowShelf.process (ctx); lpf.process (ctx);
             if (useDrive) { buf.applyGain (preGain); drive.process (ctx); }
+            if (useChorus) chorus.process (ctx);
             buf.applyGain (makeup);
             if (dlyMix > 0.0f)                              // slap / echo before the reverb
             {
@@ -187,9 +203,11 @@ private:
     double sampleRate = 48000.0;
     dsp::ProcessSpec spec {};
     int   applied = -1;
-    float preGain = 1.0f, makeup = 1.0f; bool useDrive = false;
-    dsp::IIR::Filter<float> hpf, deMud, presence, air, lowShelf;
+    float preGain = 1.0f, makeup = 1.0f; bool useDrive = false; bool useChorus = false;
+    dsp::IIR::Filter<float> hpf, deMud, presence, air, lowShelf, lpf;
+    dsp::Chorus<float> chorus;
     dsp::Compressor<float>  comp;
+    dsp::NoiseGate<float>   gate;
     dsp::WaveShaper<float>  drive;
     dsp::DelayLine<float, dsp::DelayLineInterpolationTypes::Linear> delayLine { 96000 };
     int dlySamps = 1; float dlyFb = 0.0f, dlyMix = 0.0f;
@@ -251,6 +269,8 @@ int main()
             if (line.startsWith ("monitor=")) monitor.monitorOn.store (line.fromFirstOccurrenceOf ("=", false, false).getIntValue() != 0);
             if (line.startsWith ("preset="))  { int p = jlimit (0, nPresets - 1, line.fromFirstOccurrenceOf ("=", false, false).getIntValue()); monitor.preset.store (p); }
             if (line.startsWith ("record="))  monitor.recording.store (line.fromFirstOccurrenceOf ("=", false, false).getIntValue() != 0);
+            if (line.startsWith ("gate="))    { monitor.gateThreshDb.store (line.fromFirstOccurrenceOf ("=", false, false).getFloatValue()); monitor.dirty.store (true); }
+            if (line.startsWith ("revwet="))  { float v = line.fromFirstOccurrenceOf ("=", false, false).getFloatValue() / 100.0f; monitor.revWetLive.store (jlimit (-1.0f, 1.0f, v)); monitor.dirty.store (true); }
         }
 
         // recording: record dry, monitor wet
