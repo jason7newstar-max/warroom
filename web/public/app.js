@@ -164,6 +164,13 @@ function renderWorldview() {
 }
 
 function setWorldviewHover(index) {
+  const active = Number.isInteger(index) && index >= 0;
+  worldviewDeck.classList.toggle("is-hovering", active);
+  if (active) {
+    worldviewDeck.dataset.hover = String(index);
+  } else {
+    delete worldviewDeck.dataset.hover;
+  }
   [...worldviewDeck.querySelectorAll(".worldview-card")].forEach((card) => {
     card.classList.toggle("hovered", Number(card.dataset.index) === index);
   });
