@@ -18,6 +18,7 @@ const decisionCount = document.querySelector("#decision-count");
 const activitySource = document.querySelector("#activity-source");
 const worldviewDeck = document.querySelector("#worldview-deck");
 const worldviewSolo = document.querySelector("#worldview-solo");
+const sceneRoot = document.querySelector("#war-scene");
 
 const AGENT_META = {
   IA10: { id: "IA10", initials: "IA", avatar: "ia10_work1.png", role: "Supervisor / COO", engine: "Claude Code", machine: "Opus 4.8",
@@ -67,6 +68,16 @@ const WORLDVIEW = [
 ];
 
 let activeWorldview = 0;
+let latestNow = { agents: {} };
+let latestActivity = [];
+
+const SCENE_AGENTS = [
+  { id: "Wentian", name: "文天", label: "Wentian", avatar: "wentian.jpg", className: "wentian", kind: "portrait" },
+  { id: "Karen", name: "Karen", label: "Karen", avatar: "karen_work1.png", className: "karen", kind: "portrait" },
+  { id: "Mini", name: "Mini", label: "Mini", avatar: "mini_work1.png", className: "mini", kind: "portrait" },
+  { id: "IA10", name: "IA10", label: "IA10", avatar: "ia10_work1.png", className: "ia10", kind: "portrait" },
+  { id: "Dali", name: "Dali", label: "Dali", avatar: "dali.png", className: "dali", kind: "screen" }
+];
 
 const statusClass = (value) => {
   const normalized = String(value || "").toLowerCase();
@@ -138,6 +149,10 @@ function renderWorldview() {
           <strong>${escapeHtml(card.name)}</strong>
         </button>
       `
+    ).join("") + WORLDVIEW.map(
+      (card, index) => `
+        <button class="deck-hit" type="button" data-index="${index}" aria-label="Show ${escapeHtml(card.name)} worldview card"></button>
+      `
     ).join("");
   }
 
@@ -145,6 +160,12 @@ function renderWorldview() {
     const selected = index === activeWorldview;
     card.classList.toggle("selected", selected);
     card.setAttribute("aria-pressed", String(selected));
+  });
+}
+
+function setWorldviewHover(index) {
+  [...worldviewDeck.querySelectorAll(".worldview-card")].forEach((card) => {
+    card.classList.toggle("hovered", Number(card.dataset.index) === index);
   });
 }
 
@@ -211,6 +232,80 @@ function parseCommits(commits) {
     date: item.commit?.author?.date || item.commit?.committer?.date || new Date().toISOString(),
     subject: item.commit?.message?.split("\n")[0] || "commit"
   }));
+}
+
+function activityAgent(item) {
+  const haystack = `${item.author || ""} ${item.subject || ""}`;
+  return ["IA10", "Karen", "Mini", "Dali", "Wentian"].find((name) => {
+    if (name === "Wentian") return /\b(Wentian|文天|Chairman)\b/i.test(haystack);
+    return new RegExp(`\\b${name}\\b`, "i").test(haystack);
+  });
+}
+
+function compactMessage(value) {
+  return stripMd(value || "")
+    .replace(/^\[[^\]]+\]\s*/, "")
+    .replace(/^war-room web:\s*/i, "")
+    .slice(0, 76);
+}
+
+function sceneAgentState(agentId) {
+  const live = latestNow.agents?.[agentId] || latestNow.agents?.[agentId.toLowerCase()];
+  const activity = latestActivity.find((item) => activityAgent(item) === agentId);
+  const liveTs = Number(live?.ts || 0);
+  const activityTs = activity ? Math.floor(new Date(activity.date).getTime() / 1000) : 0;
+  const ts = Math.max(liveTs, activityTs);
+  const isWorking = ts > 0 && (Date.now() / 1000 - ts) < 3600;
+  const message = live?.task || activity?.subject || "";
+  return {
+    isWorking,
+    ts,
+    message: compactMessage(message)
+  };
+}
+
+function renderLiveScene() {
+  if (!sceneRoot) return;
+  sceneRoot.innerHTML = `
+    <img class="scene-bg" src="/lounge_scene.jpg" alt="" />
+    <div class="scene-vignette"></div>
+    <div class="scene-floor"></div>
+    <div class="scene-agents">
+      ${SCENE_AGENTS.map((agent) => {
+        const state = sceneAgentState(agent.id);
+        const bubble = state.isWorking && state.message
+          ? `<div class="scene-bubble">${escapeHtml(state.message)}</div>`
+          : "";
+        if (agent.kind === "screen") {
+          return `
+            <article class="scene-agent scene-screen ${agent.className} ${state.isWorking ? "working" : "idle"}" style="--delay: 1.2s">
+              ${bubble}
+              <div class="status-light" aria-label="${state.isWorking ? "working" : "idle"}"></div>
+              <div class="holo-console">
+                <div class="holo-topline">
+                  <span>DALI</span>
+                  <i></i>
+                </div>
+                <div class="holo-cloud">
+                  <img src="/avatars/${escapeHtml(agent.avatar)}" alt="" />
+                </div>
+                <div class="holo-lines"><span></span><span></span><span></span></div>
+              </div>
+              <strong>${escapeHtml(agent.label)}</strong>
+            </article>
+          `;
+        }
+        return `
+          <article class="scene-agent ${agent.className} ${state.isWorking ? "working" : "idle"}" style="--delay: ${SCENE_AGENTS.indexOf(agent) * 0.22}s">
+            ${bubble}
+            <div class="status-light" aria-label="${state.isWorking ? "working" : "idle"}"></div>
+            <img class="scene-portrait" src="/avatars/${escapeHtml(agent.avatar)}" alt="" />
+            <strong>${escapeHtml(agent.label)}</strong>
+          </article>
+        `;
+      }).join("")}
+    </div>
+  `;
 }
 
 async function fetchJson(url) {
@@ -398,6 +493,7 @@ async function loadLive() {
     const res = await fetch(NOW_URL + "?t=" + Date.now());
     if (!res.ok) throw new Error("now " + res.status);
     const data = await res.json();
+    latestNow = data;
     const agents = data.agents || {};
     const rows = Object.keys(agents)
       .map((k) => ({ agent: k, ...agents[k] }))
@@ -415,8 +511,10 @@ async function loadLive() {
           </div>`;
       })
       .join("");
+    renderLiveScene();
   } catch (e) {
     liveRoot.innerHTML = '<p class="live-empty">Live status unavailable.</p>';
+    renderLiveScene();
   }
 }
 
@@ -434,6 +532,8 @@ async function refresh() {
     renderAgents(data.board.agents);
     renderTasks(data.board.tasks);
     renderActivity(data.activity);
+    latestActivity = data.activity || [];
+    renderLiveScene();
     renderDecisions(data.board.decisions);
     lastUpdated.textContent = `Board ${data.board.lastUpdated}`;
     activitySource.textContent = data.source === "github" ? "GitHub API" : "Local fallback";
@@ -447,12 +547,23 @@ async function refresh() {
 }
 
 worldviewDeck.addEventListener("click", (event) => {
-  const card = event.target.closest(".worldview-card");
+  const card = event.target.closest(".worldview-card, .deck-hit");
   if (!card) return;
   activeWorldview = Number(card.dataset.index || 0);
   renderWorldview();
 });
 
+worldviewDeck.addEventListener("mouseover", (event) => {
+  const hit = event.target.closest(".deck-hit");
+  if (!hit) return;
+  setWorldviewHover(Number(hit.dataset.index || 0));
+});
+
+worldviewDeck.addEventListener("mouseleave", () => {
+  setWorldviewHover(-1);
+});
+
 renderWorldview();
+renderLiveScene();
 refresh();
 setInterval(refresh, 30000);
