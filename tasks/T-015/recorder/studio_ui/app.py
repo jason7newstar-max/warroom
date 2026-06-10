@@ -153,6 +153,26 @@ def index():
     return send_from_directory(Path(__file__).parent, "index.html")
 
 
+@app.route("/daw")
+def daw():
+    return send_from_directory(Path(__file__).parent, "daw.html")
+
+
+@app.route("/api/save_comp", methods=["POST"])
+def save_comp():
+    """Persist a comped / punched-in vocal (WAV bytes posted from the DAW view)."""
+    from flask import request
+    raw = request.get_data()
+    if not raw:
+        abort(400)
+    name = request.args.get("name") or f"take-{time.strftime('%H%M%S')}_comp.wav"
+    if not name.endswith(".wav"):
+        name += ".wav"
+    (TAKES / name).write_bytes(raw)
+    info = sf.info(str(TAKES / name))
+    return jsonify(ok=True, name=name, duration=round(info.duration, 2))
+
+
 @app.route("/stage.png")
 def stage():
     return send_from_directory(Path(__file__).parent, "stage.png")
