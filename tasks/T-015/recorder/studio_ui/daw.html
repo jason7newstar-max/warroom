@@ -105,6 +105,10 @@
     <span class="meterlabel">Input</span>
     <div class="meter"><div class="fill" id="fill"></div></div>
     <button class="t" id="analyze" disabled title="把人声自动切成一句一句(像录音师标记段落)">🎤 分析段落</button>
+    <button class="t" id="pitchbtn" disabled title="录音师式音准报告:只评≥150ms的持续音,转音滑音颤音全部豁免">🎯 音准报告</button>
+    <select id="pitchmode" class="t" style="padding:8px 10px" title="专业=精确诊断(±15/35音分) · 爱好者=只报最值得重唱的2-3句(±25/50音分)">
+      <option value="pro">专业</option><option value="hobby">爱好者</option>
+    </select>
     <span class="meterlabel">Pre-roll</span>
     <select id="preroll" class="t" style="padding:8px 10px">
       <option value="2">2s</option><option value="3" selected>3s</option>
@@ -370,8 +374,14 @@ function renderPhrases(){
       'background:rgba(216,180,109,.16);border:1px solid rgba(216,180,109,.55);border-radius:6px;'+
       'color:#e8d9b8;font:700 11px/26px sans-serif;text-align:center;cursor:pointer;'+
       'overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding:0 4px';
-    d.textContent='第'+s.i+'句'+(s.text?' '+s.text:'');
-    d.title=(s.text||'')+'  ['+fmt(s.start)+' – '+fmt(s.end)+']  点击=选中这句,然后按 Punch-in 重唱';
+    const g=(typeof pitchGrades!=='undefined')&&pitchGrades[s.i];
+    const dot=g&&g.grade&&g.grade!=='none'
+      ? '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:3px;vertical-align:1px;background:'+
+        (g.grade==='green'?'#5ad17a':g.grade==='yellow'?'#e8c45a':'#f2685f')+'"></span>' : '';
+    d.innerHTML=dot+'第'+s.i+'句'+(s.text?' '+s.text:'');
+    d.title=(s.text||'')+'  ['+fmt(s.start)+' – '+fmt(s.end)+']'+
+      (g&&g.med!=null?('\n音准:中位偏差 '+g.med+'音分 · 最差处 '+fmt(g.worst.t)+' ('+g.worst.cents+'音分) · '+g.n+'个持续音'):'')+
+      '\n点击=选中这句,然后按 Punch-in 重唱';
     d.onclick=()=>{
       inPoint=s.start; regionEnd=s.end; positionRegion();
       clock.textContent=fmt(inPoint);
@@ -389,9 +399,35 @@ $('#analyze').onclick=async()=>{
     const j=await (await fetch('/api/analyze/'+lastCompName)).json();
     phrases=j.segments||[];
     renderPhrases();
+    $('#pitchbtn').disabled = phrases.length===0;
     toast('切出 '+phrases.length+' 句('+(j.source==='whisper'?'按歌词识别':'按声音检测')+')— 点哪句重唱哪句');
   }catch(e){ toast('分析失败:'+e.message); }
   $('#analyze').textContent='🎤 分析段落'; $('#analyze').disabled=false;
+};
+
+// ===== 🎯 PITCH REPORT — the engineer's honest ear (suggests, never judges) =====
+let pitchGrades={};
+$('#pitchbtn').onclick=async()=>{
+  if(!lastCompName||!phrases.length){ toast('先点 🎤 分析段落'); return; }
+  $('#pitchbtn').textContent='🎯 听音准…'; $('#pitchbtn').disabled=true;
+  try{
+    const mode=$('#pitchmode').value;
+    const j=await (await fetch('/api/pitch/'+lastCompName,{method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({phrases:phrases.map(p=>({i:p.i,start:p.start,end:p.end})),mode})})).json();
+    pitchGrades={};
+    for(const p of (j.phrases||[])) pitchGrades[p.i]=p;
+    renderPhrases();
+    let msg='整体:'+(j.overall.med!=null?('中位偏差 '+j.overall.med+'音分 · '+j.overall.in_tune_pct+'% 在准心'):'没测到持续音');
+    if(mode==='hobby' && j.priority && j.priority.length){
+      msg+=' · 最值得重唱:第'+j.priority.join('、')+'句(其余的留给后期轻修就行)';
+    }else if(mode==='pro'){
+      const reds=(j.phrases||[]).filter(p=>p.grade==='red').map(p=>p.i);
+      msg+= reds.length?(' · 建议重唱:第'+reds.join('、')+'句'):' · 全部达标 ✅';
+    }
+    toast(msg);
+  }catch(e){ toast('音准分析失败:'+e.message); }
+  $('#pitchbtn').textContent='🎯 音准报告'; $('#pitchbtn').disabled=false;
 };
 
 // ---- save comped vocal ----
