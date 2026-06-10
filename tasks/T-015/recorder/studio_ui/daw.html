@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PHANTOM — DAW</title>
+<style>
+  :root{--gold:#d8b46d;--ink:#f7f4ec;--bg:#0f0f0e;--panel:#181715;--line:rgba(247,244,236,.12);
+        --green:#5ad17a;--red:#f2685f;--blue:#6db7f2;--cyan:#63d3c8;}
+  *{box-sizing:border-box}
+  body{margin:0;color:var(--ink);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
+    min-height:100vh;background:#0c0c0b;}
+  header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;
+    border-bottom:1px solid var(--line);background:rgba(12,12,11,.9);position:sticky;top:0;z-index:5}
+  .brand{font-weight:800;letter-spacing:.18em;font-size:14px}.brand b{color:var(--gold)}
+  .brand a{color:rgba(247,244,236,.5);text-decoration:none;font-size:12px;margin-left:14px;font-weight:600}
+  .dev{font-size:12px;color:rgba(247,244,236,.55)}
+  main{max-width:1180px;margin:0 auto;padding:18px 20px}
+  /* transport */
+  .transport{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+  button.t{background:rgba(24,23,21,.8);border:1px solid var(--line);color:var(--ink);border-radius:9px;
+    padding:10px 15px;font-weight:700;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:7px}
+  button.t:hover{border-color:var(--gold)}
+  button.t:disabled{opacity:.4;cursor:not-allowed}
+  button.t.rec .dot{width:13px;height:13px;border-radius:50%;background:var(--red)}
+  button.t.rec.on{border-color:var(--red);box-shadow:0 0 0 3px rgba(242,104,95,.18)}
+  button.t.rec.on .dot{border-radius:3px}
+  button.t.punch{color:var(--gold);border-color:rgba(216,180,109,.45)}
+  .clock{font-variant-numeric:tabular-nums;font-weight:800;font-size:18px;letter-spacing:.04em;
+    padding:8px 12px;border:1px solid var(--line);border-radius:9px;background:#000;min-width:96px;text-align:center}
+  .spacer{flex:1}
+  .file{font-size:12px;color:rgba(247,244,236,.7)}
+  .hint{font-size:12px;color:rgba(247,244,236,.45);margin:2px 0 12px}
+  .hint b{color:var(--gold)}
+  /* timeline */
+  .tl{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#111110}
+  .ruler{height:26px;position:relative;background:#151513;border-bottom:1px solid var(--line)}
+  .lane{position:relative;border-bottom:1px solid var(--line)}
+  .lane:last-child{border-bottom:none}
+  .lane .label{position:absolute;left:10px;top:8px;z-index:3;font-size:11px;letter-spacing:.14em;
+    text-transform:uppercase;font-weight:800;color:rgba(247,244,236,.55);pointer-events:none}
+  .lane.backing .label{color:var(--cyan)}
+  .lane.vocal .label{color:var(--gold)}
+  canvas{display:block;width:100%}
+  /* overlay layer for playhead + region (covers whole timeline) */
+  .overlay{position:absolute;inset:0;pointer-events:none;z-index:4}
+  #playhead{position:absolute;top:0;bottom:0;width:2px;background:var(--red);left:0;
+    box-shadow:0 0 8px rgba(242,104,95,.7)}
+  #region{position:absolute;top:26px;bottom:0;background:rgba(216,180,109,.14);
+    border-left:1.5px solid var(--gold);border-right:1.5px solid var(--gold);left:0;width:0;display:none}
+  .tlwrap{position:relative}
+  .meterline{display:flex;align-items:center;gap:10px;margin:12px 0 0}
+  .meterlabel{font-size:11px;letter-spacing:.16em;color:rgba(247,244,236,.5);text-transform:uppercase}
+  .meter{flex:1;height:12px;border-radius:6px;background:#000;overflow:hidden;border:1px solid var(--line)}
+  .meter .fill{height:100%;width:0%;background:linear-gradient(90deg,var(--green) 0,var(--green) 70%,#e8c45a 86%,var(--red) 100%);transition:width .07s linear}
+  .takes{margin-top:18px}
+  h2{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin:18px 0 10px}
+  .take{display:flex;align-items:center;gap:12px;padding:10px 13px;border:1px solid var(--line);
+    border-radius:10px;background:rgba(20,19,17,.6);margin-bottom:8px}
+  .take .nm{font-weight:700;font-size:13px}.take .meta{font-size:11px;color:rgba(247,244,236,.5)}
+  .take .sp{flex:1}
+  .take button{background:transparent;border:1px solid var(--line);color:var(--ink);border-radius:7px;
+    padding:6px 11px;font-weight:700;cursor:pointer;font-size:12px}
+  .take button:hover{border-color:var(--gold)}
+  .empty{color:rgba(247,244,236,.4);font-size:13px}
+  .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#1a1813;
+    border:1px solid var(--gold);color:var(--ink);padding:10px 16px;border-radius:10px;font-size:13px;
+    opacity:0;transition:.25s;z-index:9;pointer-events:none}
+  .toast.show{opacity:1}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">PHANTOM <b>DAW</b><a href="/">← classic view</a></div>
+  <div class="dev" id="dev">—</div>
+</header>
+<main>
+  <div class="transport">
+    <button class="t" id="play" disabled>▶ Play</button>
+    <button class="t" id="stop" disabled>■ Stop</button>
+    <button class="t rec" id="rec"><span class="dot"></span> Record</button>
+    <button class="t punch" id="punch" disabled title="Re-record from the in-point over the take">⤵ Punch-in</button>
+    <div class="clock" id="clock">0:00.0</div>
+    <div class="spacer"></div>
+    <label class="file">伴奏 Backing: <input type="file" id="bt" accept="audio/*"></label>
+  </div>
+  <div class="hint">Load a backing track, then <b>Record</b> a full take. Click the timeline to drop the
+    <b>in-point</b>, drag to mark a region, and hit <b>Punch-in</b> to re-sing just that part — it splices
+    over the take. <b>Play</b> auditions backing + vocal together.</div>
+
+  <div class="tl">
+    <div class="tlwrap" id="tlwrap">
+      <div class="ruler" id="ruler"></div>
+      <div class="lane backing"><div class="label">Backing 伴奏</div><canvas id="cvBack" height="120"></canvas></div>
+      <div class="lane vocal"><div class="label">Vocal 人声</div><canvas id="cvVox" height="120"></canvas></div>
+      <div class="overlay">
+        <div id="region"></div>
+        <div id="playhead"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="meterline">
+    <span class="meterlabel">Input</span>
+    <div class="meter"><div class="fill" id="fill"></div></div>
+    <button class="t" id="mon" title="Live monitor with effects">🎧 Monitor</button>
+  </div>
+
+  <div class="takes">
+    <h2>Takes <button class="t" id="savecomp" style="margin-left:8px;font-size:12px;padding:6px 11px" disabled>⬇ Save comp</button></h2>
+    <div id="list"><div class="empty">No takes yet — load a backing track and hit Record.</div></div>
+  </div>
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+const AC = new (window.AudioContext||window.webkitAudioContext)();
+const $ = s=>document.querySelector(s);
+const dpr = Math.min(2, window.devicePixelRatio||1);
+const PXPS_MIN = 24;            // min pixels per second
+let pxps = 80;                  // pixels per second (recomputed to fit)
+let timelineDur = 8;            // seconds shown
+let backBuf=null, voxBuf=null;  // AudioBuffers
+let inPoint=0, regionEnd=null;  // seconds
+let mode='idle';                // idle | recording | punching | playing
+let playStart=0, playFrom=0;    // AC time + timeline offset at playback start
+let srcBack=null, srcVox=null, raf=0;
+
+const cvBack=$('#cvBack'), cvVox=$('#cvVox'), ruler=$('#ruler'),
+      playhead=$('#playhead'), region=$('#region'), wrap=$('#tlwrap'), clock=$('#clock');
+
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
+function fmt(t){const m=Math.floor(t/60),s=(t%60);return m+':'+s.toFixed(1).padStart(4,'0');}
+
+function recomputeScale(){
+  const w = wrap.clientWidth;
+  timelineDur = Math.max(8, (backBuf?backBuf.duration:0), (voxBuf?voxBuf.duration:0)) + 0.5;
+  pxps = Math.max(PXPS_MIN, w / timelineDur);
+  drawAll();
+}
+function sec2x(t){return t*pxps;}
+function x2sec(x){return x/pxps;}
+
+function drawRuler(){
+  ruler.innerHTML='';
+  const step = timelineDur>60?10:(timelineDur>20?5:1);
+  for(let t=0;t<=timelineDur;t+=step){
+    const d=document.createElement('div');
+    d.style.cssText=`position:absolute;left:${sec2x(t)}px;top:0;bottom:0;border-left:1px solid rgba(247,244,236,.10);
+      font-size:10px;color:rgba(247,244,236,.4);padding:6px 0 0 4px`;
+    d.textContent=fmt(t).replace('.0','');
+    ruler.appendChild(d);
+  }
+}
+function drawWave(cv,buf,color){
+  const w = Math.max(1,Math.round(sec2x(timelineDur)));
+  cv.width = w*dpr; cv.height = 120*dpr; cv.style.width=w+'px'; cv.style.height='120px';
+  const ctx=cv.getContext('2d'); ctx.scale(dpr,dpr);
+  ctx.clearRect(0,0,w,120);
+  // baseline
+  ctx.strokeStyle='rgba(247,244,236,.08)';ctx.beginPath();ctx.moveTo(0,60);ctx.lineTo(w,60);ctx.stroke();
+  if(!buf) return;
+  const data=buf.getChannelData(0), N=data.length, mid=60, amp=54;
+  const usableW = Math.round(sec2x(buf.duration));
+  ctx.fillStyle=color;
+  for(let x=0;x<usableW;x++){
+    const t0=x2sec(x), t1=x2sec(x+1);
+    let i0=Math.floor(t0/buf.duration*N), i1=Math.floor(t1/buf.duration*N);
+    i1=Math.min(N,Math.max(i1,i0+1));
+    let mn=1,mx=-1;
+    for(let i=i0;i<i1;i++){const v=data[i];if(v<mn)mn=v;if(v>mx)mx=v;}
+    const y0=mid-mx*amp, y1=mid-mn*amp;
+    ctx.fillRect(x,y0,1,Math.max(1,y1-y0));
+  }
+}
+function drawAll(){
+  drawRuler();
+  drawWave(cvBack,backBuf,'rgba(99,211,200,.85)');
+  drawWave(cvVox,voxBuf,'rgba(216,180,109,.9)');
+  positionRegion();
+}
+function positionRegion(){
+  if(regionEnd!=null && regionEnd>inPoint){
+    region.style.display='block';
+    region.style.left=sec2x(inPoint)+'px';
+    region.style.width=sec2x(regionEnd-inPoint)+'px';
+  }else{ region.style.display='none'; }
+  playhead.style.left=sec2x(currentPos())+'px';
+}
+
+// ---- timeline interaction: click=set in-point, drag=region ----
+let dragging=false,dragStart=0;
+wrap.addEventListener('mousedown',e=>{
+  if(mode!=='idle')return;
+  const r=wrap.getBoundingClientRect();
+  dragStart=Math.max(0,x2sec(e.clientX-r.left));
+  inPoint=dragStart; regionEnd=null; dragging=true;
+  positionRegion(); clock.textContent=fmt(inPoint);
+});
+window.addEventListener('mousemove',e=>{
+  if(!dragging)return;
+  const r=wrap.getBoundingClientRect();
+  const t=Math.max(0,x2sec(e.clientX-r.left));
+  if(Math.abs(t-dragStart)>0.05){ inPoint=Math.min(dragStart,t); regionEnd=Math.max(dragStart,t); }
+  positionRegion();
+});
+window.addEventListener('mouseup',()=>{dragging=false;});
+
+function currentPos(){
+  if(mode==='playing'||mode==='recording'||mode==='punching')
+    return playFrom + (AC.currentTime - playStart);
+  return inPoint;
+}
+function tick(){
+  const p=currentPos();
+  playhead.style.left=sec2x(p)+'px';
+  clock.textContent=fmt(p);
+  // auto-stop play at end
+  if(mode==='playing' && p>=timelineDur){ stopAll(); }
+  raf=requestAnimationFrame(tick);
+}
+
+// ---- load backing ----
+$('#bt').addEventListener('change',async e=>{
+  const f=e.target.files[0]; if(!f)return;
+  const ab=await f.arrayBuffer();
+  backBuf=await AC.decodeAudioData(ab);
+  recomputeScale();
+  $('#play').disabled=false;
+  toast('Backing loaded · '+fmt(backBuf.duration));
+});
+
+// ---- playback (backing + vocal together) ----
+function startSources(fromSec){
+  stopSources();
+  playStart=AC.currentTime; playFrom=fromSec;
+  if(backBuf){ srcBack=AC.createBufferSource(); srcBack.buffer=backBuf; srcBack.connect(AC.destination);
+    srcBack.start(0, Math.min(fromSec,backBuf.duration)); }
+  if(voxBuf){ srcVox=AC.createBufferSource(); srcVox.buffer=voxBuf; srcVox.connect(AC.destination);
+    if(fromSec<voxBuf.duration) srcVox.start(0, fromSec); }
+}
+function stopSources(){ try{srcBack&&srcBack.stop()}catch(e){} try{srcVox&&srcVox.stop()}catch(e){} srcBack=srcVox=null; }
+
+$('#play').onclick=()=>{ if(mode!=='idle')return; AC.resume(); mode='playing'; startSources(inPoint); $('#stop').disabled=false; };
+$('#stop').onclick=stopAll;
+function stopAll(){ stopSources(); if(mode==='recording'||mode==='punching'){ /* handled in stopRecord */ } mode='idle'; $('#stop').disabled=true; }
+
+// ---- recording (server-side via Flask) ----
+async function serverRecord(){ await fetch('/api/record',{method:'POST'}); }
+async function serverStop(){ return (await (await fetch('/api/stop',{method:'POST'})).json()); }
+
+$('#rec').onclick=async()=>{
+  if(mode==='recording'){ return finishRecord(false); }
+  if(mode!=='idle')return;
+  AC.resume(); inPoint=0; regionEnd=null;
+  mode='recording'; $('#rec').classList.add('on'); $('#rec').innerHTML='<span class="dot"></span> Stop';
+  await serverRecord(); startSources(0);            // play backing from top while recording
+};
+$('#punch').onclick=async()=>{
+  if(mode!=='idle'){ if(mode==='punching') return finishRecord(true); return; }
+  if(!voxBuf){ toast('Record a full take first'); return; }
+  AC.resume();
+  mode='punching'; $('#punch').textContent='■ Stop punch';
+  $('#rec').disabled=true;
+  await serverRecord(); startSources(inPoint);      // play backing from the in-point
+};
+
+async function finishRecord(isPunch){
+  const at = isPunch?inPoint:0;
+  stopSources();
+  const r=await serverStop();
+  // reset transport UI
+  mode='idle';
+  $('#rec').classList.remove('on'); $('#rec').innerHTML='<span class="dot"></span> Record';
+  $('#punch').textContent='⤵ Punch-in'; $('#rec').disabled=false; $('#stop').disabled=true;
+  if(!r||!r.name){ toast('No audio captured'); return; }
+  // fetch the freshly recorded take and decode
+  const ab=await (await fetch('/api/audio/'+r.name)).arrayBuffer();
+  const newBuf=await AC.decodeAudioData(ab);
+  if(!isPunch){ voxBuf=newBuf; }              // full take replaces vocal lane
+  else { voxBuf=spliceBuffer(voxBuf,newBuf,at, regionEnd!=null?regionEnd:at+newBuf.duration); }
+  lastCompName = r.name;
+  recomputeScale(); refreshTakes();
+  $('#punch').disabled=false; $('#savecomp').disabled=false;
+  toast(isPunch?('Punched in at '+fmt(at)):'Take recorded · '+fmt(newBuf.duration));
+}
+
+// splice newBuf into base starting at `at` seconds, replacing until `until` seconds
+function spliceBuffer(base, ins, at, until){
+  const sr=AC.sampleRate;
+  const baseLen=base?base.length:0;
+  const insLen=ins.length;
+  const atS=Math.round(at*sr);
+  const total=Math.max(baseLen, atS+insLen);
+  const out=AC.createBuffer(1,total,sr);
+  const o=out.getChannelData(0);
+  if(base){ o.set(base.getChannelData(0).subarray(0,Math.min(baseLen,total)),0); }
+  // clear the punched region then write new vocal (crossfade 5ms edges)
+  const ins0=ins.getChannelData(0);
+  const fade=Math.round(0.005*sr);
+  for(let i=0;i<insLen;i++){
+    let g=1;
+    if(i<fade) g=i/fade;
+    if(i>insLen-fade) g=Math.max(0,(insLen-i)/fade);
+    const idx=atS+i;
+    o[idx]= (o[idx]||0)*(1-g) + ins0[i]*g;
+  }
+  return out;
+}
+
+// ---- save comped vocal ----
+let lastCompName=null;
+$('#savecomp').onclick=async()=>{
+  if(!voxBuf){return;}
+  const wav=encodeWav(voxBuf);
+  const r=await (await fetch('/api/save_comp?name=comp-'+Date.now()+'.wav',
+    {method:'POST',headers:{'Content-Type':'application/octet-stream'},body:wav})).json();
+  toast('Saved '+r.name+' · '+r.duration+'s'); refreshTakes();
+};
+function encodeWav(buf){
+  const sr=buf.sampleRate, ch=buf.getChannelData(0), n=ch.length;
+  const ab=new ArrayBuffer(44+n*2), v=new DataView(ab);
+  const ws=(o,s)=>{for(let i=0;i<s.length;i++)v.setUint8(o+i,s.charCodeAt(i))};
+  ws(0,'RIFF');v.setUint32(4,36+n*2,true);ws(8,'WAVE');ws(12,'fmt ');
+  v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);
+  v.setUint32(24,sr,true);v.setUint32(28,sr*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);
+  ws(36,'data');v.setUint32(40,n*2,true);
+  let o=44;for(let i=0;i<n;i++){let s=Math.max(-1,Math.min(1,ch[i]));v.setInt16(o,s<0?s*0x8000:s*0x7fff,true);o+=2;}
+  return ab;
+}
+
+// ---- takes list + meter + monitor ----
+async function refreshTakes(){
+  const d=await (await fetch('/api/takes')).json();
+  const list=$('#list');
+  if(!d.takes.length){list.innerHTML='<div class="empty">No takes yet.</div>';return;}
+  list.innerHTML=d.takes.map(t=>`<div class="take"><div><div class="nm">${t.name}</div>
+    <div class="meta">${t.duration}s</div></div><div class="sp"></div>
+    <button onclick="loadToVox('${t.name}')">↥ Load to vocal lane</button>
+    <audio controls src="/api/audio/${t.name}" style="height:30px"></audio></div>`).join('');
+}
+window.loadToVox=async(name)=>{
+  const ab=await (await fetch('/api/audio/'+name)).arrayBuffer();
+  voxBuf=await AC.decodeAudioData(ab); recomputeScale();
+  $('#punch').disabled=false; $('#savecomp').disabled=false; toast('Loaded '+name+' to vocal lane');
+};
+
+const fill=$('#fill'), dev=$('#dev'); let monitoring=false;
+$('#mon').onclick=async()=>{ monitoring=!monitoring;
+  const r=await (await fetch('/api/monitor',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({on:monitoring})})).json();
+  monitoring=r.monitor; $('#mon').style.borderColor=monitoring?'var(--green)':'';
+  $('#mon').textContent=!r.monitor_ok?'🎧 n/a':(monitoring?'🎧 Monitor ON':'🎧 Monitor'); };
+setInterval(async()=>{ try{const m=await (await fetch('/api/meter')).json();
+  dev.textContent='IN · '+m.device; fill.style.width=Math.max(0,Math.min(100,(m.peak_db+60)/60*100))+'%';
+}catch(e){} },150);
+
+window.addEventListener('resize',recomputeScale);
+recomputeScale(); refreshTakes(); tick();
+</script>
+</body>
+</html>
