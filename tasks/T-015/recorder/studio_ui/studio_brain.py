@@ -51,41 +51,65 @@ unknown          — none of the above
 """
 
 SYS = (
-    "You are the dispatcher for a hands-free recording studio. The singer speaks Chinese. "
+    "You are the dispatcher for a hands-free recording studio in New York City. The singer may speak "
+    "ANY of: Chinese(中/粤), English, Spanish(español), Korean(한국어), Japanese(日本語), or a mix. "
     "Map their utterance to EXACTLY ONE action from this list and extract args. "
-    "Reply ONLY compact JSON: {\"action\":\"...\",\"args\":{...},\"say\":\"<≤12 Chinese chars spoken confirmation>\"}. "
-    "For phrase numbers put {\"n\": <int>} (Chinese numerals: 第三句→3). For gain put {\"dir\":\"up|down\"}. "
-    "For monitor put {\"style\":\"silk|stage|dry\"}. If unclear use action \"unknown\".\n\nACTIONS:\n" + ACTIONS
+    "Reply ONLY compact JSON: {\"action\":\"...\",\"args\":{...},\"say\":\"<short spoken confirmation IN THE SAME LANGUAGE the singer used>\"}. "
+    "For phrase numbers put {\"n\": <int>} (parse numerals in any language: 第三句/line three/línea tres/세 번째/3番目 → 3). "
+    "For gain put {\"dir\":\"up|down\"}. For monitor put {\"style\":\"silk|stage|dry\"}. "
+    "Examples across languages: 'redo line 2' / 'repite la segunda' / '두 번째 다시' / '2番目もう一回' → sing_phrase n=2; "
+    "'export'/'termina'/'끝내자'/'書き出して' → finish; 'louder backing'/'más alto el playback' → set_backing_gain up. "
+    "If unclear use action \"unknown\".\n\nACTIONS:\n" + ACTIONS
 )
 
 _CN = {"一":1,"二":2,"两":2,"三":3,"四":4,"五":5,"六":6,"七":7,"八":8,"九":9,"十":10,"第一":1,"首":1}
+_WORDNUM = {  # english/spanish/korean/japanese ordinals & cardinals → int
+    "one":1,"first":1,"two":2,"second":2,"three":3,"third":3,"four":4,"fourth":4,"five":5,"fifth":5,
+    "uno":1,"primera":1,"primer":1,"dos":2,"segunda":2,"segundo":2,"tres":3,"tercera":3,"tercer":3,
+    "cuatro":4,"cuarta":4,"cinco":5,"quinta":5,
+    "하나":1,"첫":1,"둘":2,"두":2,"셋":3,"세":3,"넷":4,"네":4,"다섯":5,"다섯번":5,
+    "ひとつ":1,"いち":1,"ふたつ":2,"に":2,"みっつ":3,"さん":3,"よん":4,"し":4,"ご":5,
+}
 
 def _quick(text):
-    """Offline fallback parser (no network) — covers the common phrasings."""
-    t = text.strip()
+    """Offline fallback parser (no network) — multilingual (中英西韩日)."""
+    t = text.strip(); tl = t.lower()
     def num():
         m = re.search(r'第?\s*([0-9]+|[一二两三四五六七八九十])\s*[句段遍条]', t)
-        if not m: return None
-        g = m.group(1)
-        return int(g) if g.isdigit() else _CN.get(g)
-    if re.search(r'(出歌|搞定|完成|导出|存(歌|盘)|可以了出)', t): return {"action":"finish","args":{},"say":"好,出歌"}
-    if re.search(r'(结束|收工|拜拜|退出)', t): return {"action":"end_session","args":{},"say":"收工"}
-    if re.search(r'(重唱|重来|再来|再录).*([0-9一二两三四五六七八九十].*[句段])|([句段]).*(重|再)', t):
-        n=num(); return {"action":"sing_phrase","args":{"n":n} if n else {},"say":(f"重唱第{n}句" if n else "重唱这句")}
-    if re.search(r'从.*([0-9一二两三四五六七八九十]).*[句段].*放', t):
-        n=num(); return {"action":"play_from","args":{"n":n},"say":f"从第{n}段放"}
-    if re.search(r'(听一下|回放|放来听|放一下)', t): return {"action":"play","args":{},"say":"放给你听"}
-    if re.search(r'伴奏.*(大|高|响)', t): return {"action":"set_backing_gain","args":{"dir":"up"},"say":"伴奏调大"}
-    if re.search(r'伴奏.*(小|低|轻)', t): return {"action":"set_backing_gain","args":{"dir":"down"},"say":"伴奏调小"}
-    if re.search(r'(丝滑)', t): return {"action":"set_monitor","args":{"style":"silk"},"say":"耳返丝滑"}
-    if re.search(r'(现场|舞台)', t): return {"action":"set_monitor","args":{"style":"stage"},"say":"耳返现场"}
-    if re.search(r'(干声)', t): return {"action":"set_monitor","args":{"style":"dry"},"say":"耳返干声"}
-    if re.search(r'(音准|准不准|跑调)', t): return {"action":"pitch","args":{},"say":"看音准"}
-    if re.search(r'(分句|分析段落|断句)', t): return {"action":"analyze","args":{},"say":"分句中"}
-    if re.search(r'(导入|用.*伴奏|加载.*伴奏)', t): return {"action":"import_backing","args":{},"say":"导入伴奏"}
-    if re.search(r'(停|够了|结束这句|punch)', t): return {"action":"stop","args":{},"say":"停"}
-    if re.search(r'(录一遍|从头|重新录|录个|开始录|录音)', t): return {"action":"record_take","args":{},"say":"开始录"}
-    return {"action":"unknown","args":{},"say":"没听清"}
+        if m:
+            g = m.group(1); return int(g) if g.isdigit() else _CN.get(g)
+        m = re.search(r'(?:line|phrase|l[ií]nea|frase|번째|番目)\s*([0-9]+)', tl)
+        if m: return int(m.group(1))
+        m = re.search(r'([0-9]+)\s*(?:번째|番目|줄|line)', tl)
+        if m: return int(m.group(1))
+        for w,v in _WORDNUM.items():
+            if w in tl: return v
+        return None
+    # finish / export
+    if re.search(r'(出歌|搞定|完成|导出|存(歌|盘)|可以了出|export|finish|done|termina|exporta|listo|끝|완성|내보내|書き出|完成|終わり)', tl):
+        return {"action":"finish","args":{},"say":"Done · 出歌"}
+    if re.search(r'(结束|收工|拜拜|退出|end session|quit|exit|terminar sesión|종료|끝내자|終了|やめ)', tl):
+        return {"action":"end_session","args":{},"say":"收工 · bye"}
+    # redo / sing a phrase
+    if re.search(r'(重唱|重来|再来|再录|redo|again|re-?sing|repite|repetir|otra vez|다시|한번 더|もう一回|もういちど|やり直)', tl):
+        n=num(); return {"action":"sing_phrase","args":{"n":n} if n else {},"say":(f"重唱第{n}句·redo line {n}" if n else "重唱·redo")}
+    if re.search(r'(play from|从.*[句段].*放|reproduce desde|부터 재생|から再生)', tl):
+        n=num(); return {"action":"play_from","args":{"n":n},"say":f"from {n}"}
+    if re.search(r'(听一下|回放|放来听|放一下|play|listen|playback|escuchar|reproduce|들어|재생|聞いて|再生)', tl):
+        return {"action":"play","args":{},"say":"播放 · play"}
+    if re.search(r'(伴奏.*(大|高|响)|louder|backing up|más alto|크게|大きく)', tl):
+        return {"action":"set_backing_gain","args":{"dir":"up"},"say":"伴奏 ↑"}
+    if re.search(r'(伴奏.*(小|低|轻)|quieter|softer|backing down|más bajo|작게|小さく)', tl):
+        return {"action":"set_backing_gain","args":{"dir":"down"},"say":"伴奏 ↓"}
+    if re.search(r'(丝滑|silk|smooth|suave|부드럽|シルク)', tl): return {"action":"set_monitor","args":{"style":"silk"},"say":"丝滑·silk"}
+    if re.search(r'(现场|舞台|stage|live|escenario|스테이지|ステージ)', tl): return {"action":"set_monitor","args":{"style":"stage"},"say":"现场·stage"}
+    if re.search(r'(干声|dry|seco|드라이|ドライ)', tl): return {"action":"set_monitor","args":{"style":"dry"},"say":"干声·dry"}
+    if re.search(r'(音准|准不准|跑调|pitch|tune|afinación|음정|ピッチ|音程)', tl): return {"action":"pitch","args":{},"say":"音准·pitch"}
+    if re.search(r'(分句|分析段落|断句|analyze|split|segment|analiza|분석|分析)', tl): return {"action":"analyze","args":{},"say":"分句·split"}
+    if re.search(r'(导入|用.*伴奏|加载.*伴奏|import|load backing|importa|불러|読み込)', tl): return {"action":"import_backing","args":{},"say":"导入伴奏"}
+    if re.search(r'(停|够了|结束这句|stop|cut|punch|para|alto|멈춰|그만|止めて|ストップ)', tl): return {"action":"stop","args":{},"say":"停·stop"}
+    if re.search(r'(录一遍|从头|重新录|录个|开始录|录音|record|take|start|graba|empezar|녹음|시작|録音|スタート)', tl): return {"action":"record_take","args":{},"say":"开始录·rec"}
+    return {"action":"unknown","args":{},"say":""}
 
 def groq_intent(text):
     body = {"model":"llama-3.3-70b-versatile",
