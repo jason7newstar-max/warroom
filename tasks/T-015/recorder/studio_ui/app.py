@@ -173,6 +173,79 @@ def save_comp():
     return jsonify(ok=True, name=name, duration=round(info.duration, 2))
 
 
+@app.route("/api/analyze/<path:fname>")
+def analyze(fname):
+    """Split a vocal take into sung PHRASES (句) like an engineer marking the take.
+
+    Primary: Groq Whisper verbose_json -> sentence segments with start/end + lyrics.
+    Fallback: energy-based VAD (no network needed). Returns
+    {segments:[{i, start, end, text}], source:"whisper"|"vad"}.
+    """
+    src = TAKES / fname
+    if not src.exists():
+        abort(404)
+    import subprocess as sp, json as js
+    import numpy as _np
+
+    # ---- try Whisper (Groq) with segment timestamps ----
+    key = ""
+    envf = Path.home() / ".hermes" / ".env"
+    if envf.exists():
+        for ln in envf.read_text().splitlines():
+            if ln.startswith("GROQ_API_KEY="):
+                key = ln.split("=", 1)[1].strip().strip('"\''); break
+    if key:
+        try:
+            r = sp.run(["curl", "-s", "-m", "60",
+                "https://api.groq.com/openai/v1/audio/transcriptions",
+                "-H", f"Authorization: Bearer {key}",
+                "-F", f"file=@{src}", "-F", "model=whisper-large-v3-turbo",
+                "-F", "response_format=verbose_json"],
+                capture_output=True, text=True, timeout=90)
+            j = js.loads(r.stdout or "{}")
+            segs = j.get("segments") or []
+            out = []
+            for i, s in enumerate(segs):
+                st, en = float(s["start"]), float(s["end"])
+                if en - st < 0.25:
+                    continue
+                out.append({"i": len(out) + 1, "start": round(max(0, st - 0.08), 3),
+                            "end": round(en + 0.08, 3), "text": (s.get("text") or "").strip()})
+            if out:
+                return jsonify(segments=out, source="whisper")
+        except Exception:
+            pass
+
+    # ---- fallback: energy VAD ----
+    data, sr = sf.read(str(src))
+    if data.ndim > 1:
+        data = data[:, 0]
+    frame = int(sr * 0.02)
+    n = len(data) // frame
+    rms = _np.sqrt((_np.reshape(data[:n * frame], (n, frame)) ** 2).mean(axis=1))
+    floor = _np.percentile(rms, 15)
+    thr = max(floor * 3.5, rms.max() * 0.06)
+    voiced = rms > thr
+    segs, start = [], None
+    for i, v in enumerate(voiced):
+        if v and start is None:
+            start = i
+        elif not v and start is not None:
+            segs.append((start * 0.02, i * 0.02)); start = None
+    if start is not None:
+        segs.append((start * 0.02, n * 0.02))
+    # merge gaps < 0.35s, drop < 0.4s
+    merged = []
+    for s, e in segs:
+        if merged and s - merged[-1][1] < 0.35:
+            merged[-1][1] = e
+        else:
+            merged.append([s, e])
+    out = [{"i": k + 1, "start": round(max(0, s - 0.10), 3), "end": round(e + 0.12, 3), "text": ""}
+           for k, (s, e) in enumerate(merged) if e - s >= 0.4]
+    return jsonify(segments=out, source="vad")
+
+
 @app.route("/stage.png")
 def stage():
     return send_from_directory(Path(__file__).parent, "stage.png")
