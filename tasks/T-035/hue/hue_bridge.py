@@ -146,8 +146,8 @@ def _rest_loop(ip, key, lights):
             h, s, v = colorsys.rgb_to_hsv(r/255, g/255, b/255)
             hue = int(h * 65535)
             sat = int(min(254, s * 254 + 30))
-            # level breathes the brightness on top of the color's own value
-            bri = int(min(254, max(25, (0.35 + 0.65 * level) * max(v, 0.35) * 254)))
+            # punchy voice response: dim floor when quiet, full blast when speaking
+            bri = int(min(254, max(15, (0.12 + 0.88 * level) * 254)))
             state = (hue, sat, bri)
             prev = last_sent.get(lid)
             # skip a push when nothing moved enough — keeps Zigbee traffic sane
