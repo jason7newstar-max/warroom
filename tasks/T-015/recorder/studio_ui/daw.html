@@ -98,11 +98,18 @@
         <div id="playhead"></div>
       </div>
     </div>
+    <div id="phrasestrip" style="position:relative;height:34px;background:#0d0d0c;border-top:1px solid var(--line);overflow:hidden"></div>
   </div>
 
   <div class="meterline">
     <span class="meterlabel">Input</span>
     <div class="meter"><div class="fill" id="fill"></div></div>
+    <button class="t" id="analyze" disabled title="把人声自动切成一句一句(像录音师标记段落)">🎤 分析段落</button>
+    <span class="meterlabel">Pre-roll</span>
+    <select id="preroll" class="t" style="padding:8px 10px">
+      <option value="2">2s</option><option value="3" selected>3s</option>
+      <option value="4">4s</option><option value="5">5s</option>
+    </select>
     <button class="t" id="mon" title="Live monitor with effects">🎧 Monitor</button>
   </div>
 
@@ -178,6 +185,7 @@ function drawAll(){
   drawWave(cvBack,backBuf,'rgba(99,211,200,.85)');
   drawWave(cvVox,voxBuf,'rgba(216,180,109,.9)');
   positionRegion();
+  try{ renderPhrases(); }catch(e){}
 }
 function positionRegion(){
   if(regionEnd!=null && regionEnd>inPoint){
@@ -231,13 +239,20 @@ $('#bt').addEventListener('change',async e=>{
 });
 
 // ---- playback (backing + vocal together) ----
-function startSources(fromSec){
+// vocalStopAt (optional): mute the EXISTING vocal at that timeline second —
+// engineer-style punch: singer hears themselves up to the punch point, then silence.
+function startSources(fromSec, vocalStopAt){
   stopSources();
   playStart=AC.currentTime; playFrom=fromSec;
   if(backBuf){ srcBack=AC.createBufferSource(); srcBack.buffer=backBuf; srcBack.connect(AC.destination);
     srcBack.start(0, Math.min(fromSec,backBuf.duration)); }
   if(voxBuf){ srcVox=AC.createBufferSource(); srcVox.buffer=voxBuf; srcVox.connect(AC.destination);
-    if(fromSec<voxBuf.duration) srcVox.start(0, fromSec); }
+    if(fromSec<voxBuf.duration){
+      srcVox.start(0, fromSec);
+      if(vocalStopAt!=null && vocalStopAt>fromSec){
+        try{ srcVox.stop(AC.currentTime + (vocalStopAt - fromSec)); }catch(e){}
+      }
+    } }
 }
 function stopSources(){ try{srcBack&&srcBack.stop()}catch(e){} try{srcVox&&srcVox.stop()}catch(e){} srcBack=srcVox=null; }
 
@@ -256,57 +271,123 @@ $('#rec').onclick=async()=>{
   mode='recording'; $('#rec').classList.add('on'); $('#rec').innerHTML='<span class="dot"></span> Stop';
   await serverRecord(); startSources(0);            // play backing from top while recording
 };
+// ===== ENGINEER-STYLE PUNCH (pre-roll → mute original at the punch → auto punch-out) =====
+let punchMeta=null, punchTimer=0, punchUI=0;
+
 $('#punch').onclick=async()=>{
   if(mode!=='idle'){ if(mode==='punching') return finishRecord(true); return; }
-  if(!voxBuf){ toast('Record a full take first'); return; }
+  if(!voxBuf){ toast('先录一条完整的 take'); return; }
   AC.resume();
-  mode='punching'; $('#punch').textContent='■ Stop punch';
-  $('#rec').disabled=true;
-  await serverRecord(); startSources(inPoint);      // play backing from the in-point
+  const pre = +($('#preroll').value||3);
+  const until = (regionEnd!=null && regionEnd>inPoint) ? regionEnd : null;
+  const from = Math.max(0, inPoint - pre);
+  punchMeta = { at: inPoint, until, recStart: from };
+  mode='punching'; $('#rec').disabled=true;
+  await serverRecord();                       // tape rolls from pre-roll start
+  startSources(from, inPoint);                // backing plays; ORIGINAL vocal mutes at the punch point
+  if(window.setCoreState) try{window.setCoreState('listening')}catch(e){}
+  // live transport feedback: 预备 countdown → 🔴 唱! → auto punch-out
+  punchUI = setInterval(()=>{
+    const p = currentPos();
+    if(p < punchMeta.at) $('#punch').textContent = '预备 '+Math.max(0,(punchMeta.at-p)).toFixed(1)+'s';
+    else if(punchMeta.until==null || p < punchMeta.until) $('#punch').textContent = '🔴 唱!(点击结束)';
+    else $('#punch').textContent = '…收尾';
+  }, 100);
+  if(until!=null){
+    // auto punch-out: stop shortly after the region ends (0.35s tail for natural release)
+    punchTimer = setTimeout(()=>finishRecord(true), Math.max(0.5,(until - from + 0.35))*1000);
+  }
 };
 
 async function finishRecord(isPunch){
-  const at = isPunch?inPoint:0;
+  clearTimeout(punchTimer); clearInterval(punchUI);
+  const meta = punchMeta; punchMeta=null;
   stopSources();
   const r=await serverStop();
-  // reset transport UI
   mode='idle';
   $('#rec').classList.remove('on'); $('#rec').innerHTML='<span class="dot"></span> Record';
   $('#punch').textContent='⤵ Punch-in'; $('#rec').disabled=false; $('#stop').disabled=true;
   if(!r||!r.name){ toast('No audio captured'); return; }
-  // fetch the freshly recorded take and decode
   const ab=await (await fetch('/api/audio/'+r.name)).arrayBuffer();
   const newBuf=await AC.decodeAudioData(ab);
-  if(!isPunch){ voxBuf=newBuf; }              // full take replaces vocal lane
-  else { voxBuf=spliceBuffer(voxBuf,newBuf,at, regionEnd!=null?regionEnd:at+newBuf.duration); }
+  if(!isPunch){
+    voxBuf=newBuf;                            // full take replaces the vocal lane
+    phrases=[]; renderPhrases();              // old phrase map no longer valid
+    $('#analyze').disabled=false;
+  } else {
+    // the recording started at pre-roll start → the new vocal for the punch
+    // begins recOffset seconds into the captured file
+    const recOffset = meta ? (meta.at - meta.recStart) : 0;
+    const at = meta ? meta.at : inPoint;
+    const until = meta && meta.until!=null ? meta.until
+                : at + Math.max(0, newBuf.duration - recOffset);
+    voxBuf=spliceBuffer(voxBuf, newBuf, at, until, recOffset);
+  }
   lastCompName = r.name;
   recomputeScale(); refreshTakes();
   $('#punch').disabled=false; $('#savecomp').disabled=false;
-  toast(isPunch?('Punched in at '+fmt(at)):'Take recorded · '+fmt(newBuf.duration));
+  toast(isPunch?('已替换 '+fmt(meta?meta.at:inPoint)+' → '+fmt(regionEnd!=null?regionEnd:0)):'Take recorded · '+fmt(newBuf.duration));
 }
 
-// splice newBuf into base starting at `at` seconds, replacing until `until` seconds
-function spliceBuffer(base, ins, at, until){
+// splice: replace base[at..until] with ins[insOffset..insOffset+(until-at)],
+// 25ms equal-power crossfades at both seams (engineer-grade, no clicks)
+function spliceBuffer(base, ins, at, until, insOffset=0){
   const sr=AC.sampleRate;
   const baseLen=base?base.length:0;
-  const insLen=ins.length;
-  const atS=Math.round(at*sr);
-  const total=Math.max(baseLen, atS+insLen);
+  const atS=Math.round(at*sr), untilS=Math.round(until*sr);
+  const offS=Math.round(insOffset*sr);
+  const ins0=ins.getChannelData(0);
+  const copyLen=Math.min(untilS-atS, Math.max(0, ins0.length-offS));
+  const total=Math.max(baseLen, atS+copyLen);
   const out=AC.createBuffer(1,total,sr);
   const o=out.getChannelData(0);
   if(base){ o.set(base.getChannelData(0).subarray(0,Math.min(baseLen,total)),0); }
-  // clear the punched region then write new vocal (crossfade 5ms edges)
-  const ins0=ins.getChannelData(0);
-  const fade=Math.round(0.005*sr);
-  for(let i=0;i<insLen;i++){
+  const fade=Math.round(0.025*sr);
+  for(let i=0;i<copyLen;i++){
     let g=1;
-    if(i<fade) g=i/fade;
-    if(i>insLen-fade) g=Math.max(0,(insLen-i)/fade);
+    if(i<fade) g=Math.sin((i/fade)*Math.PI/2);                         // equal-power in
+    if(i>copyLen-fade) g=Math.sin(((copyLen-i)/fade)*Math.PI/2);       // equal-power out
     const idx=atS+i;
-    o[idx]= (o[idx]||0)*(1-g) + ins0[i]*g;
+    o[idx]=(o[idx]||0)*(1-g)+ins0[offS+i]*g;
   }
   return out;
 }
+
+// ===== PHRASE MAP (一句一句) — like an engineer marking the take =====
+let phrases=[];
+const strip=$('#phrasestrip');
+function renderPhrases(){
+  strip.innerHTML='';
+  for(const s of phrases){
+    const d=document.createElement('div');
+    const w=Math.max(8, sec2x(s.end-s.start)-4);
+    d.style.cssText='position:absolute;top:4px;height:26px;left:'+sec2x(s.start)+'px;width:'+w+'px;'+
+      'background:rgba(216,180,109,.16);border:1px solid rgba(216,180,109,.55);border-radius:6px;'+
+      'color:#e8d9b8;font:700 11px/26px sans-serif;text-align:center;cursor:pointer;'+
+      'overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding:0 4px';
+    d.textContent='第'+s.i+'句'+(s.text?' '+s.text:'');
+    d.title=(s.text||'')+'  ['+fmt(s.start)+' – '+fmt(s.end)+']  点击=选中这句,然后按 Punch-in 重唱';
+    d.onclick=()=>{
+      inPoint=s.start; regionEnd=s.end; positionRegion();
+      clock.textContent=fmt(inPoint);
+      strip.querySelectorAll('div').forEach(x=>x.style.background='rgba(216,180,109,.16)');
+      d.style.background='rgba(216,180,109,.45)';
+      toast('已选中第'+s.i+'句 — 按 ⤵ Punch-in 重唱这一句');
+    };
+    strip.appendChild(d);
+  }
+}
+$('#analyze').onclick=async()=>{
+  if(!lastCompName){ toast('先录一条 take'); return; }
+  $('#analyze').textContent='🎤 分析中…'; $('#analyze').disabled=true;
+  try{
+    const j=await (await fetch('/api/analyze/'+lastCompName)).json();
+    phrases=j.segments||[];
+    renderPhrases();
+    toast('切出 '+phrases.length+' 句('+(j.source==='whisper'?'按歌词识别':'按声音检测')+')— 点哪句重唱哪句');
+  }catch(e){ toast('分析失败:'+e.message); }
+  $('#analyze').textContent='🎤 分析段落'; $('#analyze').disabled=false;
+};
 
 // ---- save comped vocal ----
 let lastCompName=null;
