@@ -182,6 +182,58 @@ def daw():
     return send_from_directory(Path(__file__).parent, "daw.html")
 
 
+@app.route("/pad")
+def pad():
+    return send_from_directory(Path(__file__).parent, "pad.html")
+
+
+# the four selectable AI hosts (IP characters) → voice + persona.
+# voice = Edge-TTS voice name (free, multilingual). Upgrade to ElevenLabs/MiniMax later.
+HOSTS = [
+    {"id": "mini",   "name": "Mini",  "tag": "活泼 · 暖心", "voice": "zh-CN-XiaoyiNeural",
+     "color": "#ff7eb6", "hello": "嗨!我是 Mini,今天我陪你录,放轻松,我们开始吧!"},
+    {"id": "ia10",   "name": "IA10",  "tag": "冷静 · 专业", "voice": "zh-CN-XiaoxiaoNeural",
+     "color": "#22d3ee", "hello": "我是 IA10。系统就绪,准备好就开始。"},
+    {"id": "karen",  "name": "Karen", "tag": "英气 · 干练", "voice": "zh-CN-XiaomengNeural",
+     "color": "#d8b46d", "hello": "我是 Karen,放开了唱,有我盯着呢。"},
+    {"id": "wentian","name": "文天",  "tag": "温暖 · 沉稳", "voice": "zh-CN-YunxiNeural",
+     "color": "#9bd1ff", "hello": "你好,我是文天。深呼吸,我们慢慢来。"},
+]
+
+@app.route("/api/hosts")
+def hosts():
+    return jsonify(hosts=HOSTS)
+
+@app.route("/host/<hid>.png")
+def host_img(hid):
+    """Serve the chosen host's portrait from the canon refs (if present)."""
+    canon = Path.home() / "claude-work/warroom/tasks/T-033/canon"
+    f = canon / f"{hid}.jpg"
+    if f.exists():
+        return send_file(str(f), mimetype="image/jpeg")
+    abort(404)
+
+@app.route("/api/tts")
+def tts():
+    """Speak a line in the chosen host's voice → ogg (Edge-TTS, free). ?text=&voice="""
+    from flask import request
+    import subprocess, tempfile, shutil
+    text = request.args.get("text", "").strip()
+    voice = request.args.get("voice", "zh-CN-XiaoxiaoNeural")
+    if not text:
+        abort(400)
+    vt = shutil.which("voice-tts") or str(Path.home() / ".local/bin/voice-tts")
+    out = tempfile.NamedTemporaryFile(suffix=".ogg", delete=False).name
+    try:
+        subprocess.run([vt, "-o", out, "-v", voice, text], timeout=25,
+                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        if Path(out).exists() and Path(out).stat().st_size > 500:
+            return send_file(out, mimetype="audio/ogg")
+    except Exception:
+        pass
+    abort(500)
+
+
 @app.route("/api/save_comp", methods=["POST"])
 def save_comp():
     """Persist a comped / punched-in vocal (WAV bytes posted from the DAW view)."""
