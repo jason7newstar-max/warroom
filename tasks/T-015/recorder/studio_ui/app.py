@@ -270,6 +270,87 @@ def analyze(fname):
     return jsonify(segments=out, source="vad")
 
 
+@app.route("/api/pitch/<path:fname>", methods=["POST"])
+def pitch_report(fname):
+    """Engineer-style pitch report. Scientific basis:
+    - f0 via pYIN (librosa), notes segmented from the f0 track
+    - only SUSTAINED notes >=150ms are scored (runs/转音 and slides are exempt;
+      a run is judged only by the sustained note it lands on)
+    - score = cents deviation of the note's sustain-center (median of middle 60%,
+      which also averages out vibrato) from the nearest equal-tempered semitone
+    - modes: pro  (✅<=15c ⚠️<=35c ❌>35c)  — precise diagnosis
+             hobby(✅<=25c ⚠️<=50c ❌>50c) — top-impact suggestions only
+    Body: {"phrases":[{"i","start","end"}], "mode":"pro"|"hobby"}"""
+    src = TAKES / fname
+    if not src.exists():
+        abort(404)
+    from flask import request
+    import numpy as _np
+    body = request.get_json(silent=True) or {}
+    mode = body.get("mode", "pro")
+    phr = body.get("phrases") or []
+    GREEN, YELLOW = (15, 35) if mode == "pro" else (25, 50)
+
+    import librosa
+    y, sr = librosa.load(str(src), sr=22050, mono=True)
+    hop = 256
+    f0, vflag, _ = librosa.pyin(y, fmin=80, fmax=1000, sr=sr,
+                                frame_length=2048, hop_length=hop)
+    t = librosa.times_like(f0, sr=sr, hop_length=hop)
+    midi = 69 + 12 * _np.log2(_np.where(_np.isnan(f0), 1, f0) / 440.0)
+    voiced = (~_np.isnan(f0)) & (vflag if vflag is not None else True)
+
+    # ---- segment the f0 track into note events ----
+    notes = []
+    i = 0
+    N = len(f0)
+    while i < N:
+        if not voiced[i]:
+            i += 1; continue
+        j = i
+        med = midi[i]
+        while j + 1 < N and voiced[j + 1] and abs(midi[j + 1] - med) < 0.6:
+            j += 1
+            seg = midi[i:j + 1]
+            med = float(_np.median(seg))
+        dur = t[j] - t[i]
+        if dur >= 0.15:                      # sustained note → scored
+            seg = midi[i:j + 1]
+            k = len(seg)
+            sustain = seg[int(k * 0.2):max(int(k * 0.8), int(k * 0.2) + 1)]
+            center = float(_np.median(sustain))
+            dev = (center - round(center)) * 100.0   # cents from nearest semitone
+            notes.append({"t0": float(t[i]), "t1": float(t[j]), "cents": round(dev, 1)})
+        i = j + 1
+
+    # ---- aggregate per phrase ----
+    out = []
+    for p in phr:
+        ns = [n for n in notes if p["start"] <= (n["t0"] + n["t1"]) / 2 <= p["end"]]
+        if not ns:
+            out.append({"i": p["i"], "n": 0, "med": None, "worst": None, "grade": "none"})
+            continue
+        devs = [abs(n["cents"]) for n in ns]
+        med = float(_np.median(devs))
+        w = max(ns, key=lambda n: abs(n["cents"]))
+        grade = "green" if med <= GREEN and abs(w["cents"]) <= YELLOW else \
+                ("yellow" if med <= YELLOW else "red")
+        out.append({"i": p["i"], "n": len(ns), "med": round(med, 1),
+                    "worst": {"t": round(w["t0"], 2), "cents": w["cents"]}, "grade": grade})
+    all_devs = [abs(n["cents"]) for n in notes]
+    overall = {"notes": len(notes),
+               "med": round(float(_np.median(all_devs)), 1) if all_devs else None,
+               "in_tune_pct": round(100 * sum(d <= GREEN for d in all_devs) / len(all_devs)) if all_devs else None}
+    # hobby mode: rank the phrases worth redoing (top impact only)
+    priority = []
+    if mode == "hobby":
+        bad = [p for p in out if p["grade"] in ("red", "yellow") and p["med"] is not None]
+        bad.sort(key=lambda p: -(p["med"] + abs(p["worst"]["cents"]) * 0.5))
+        priority = [p["i"] for p in bad[:3]]
+    return jsonify(mode=mode, phrases=out, overall=overall, priority=priority,
+                   thresholds={"green": GREEN, "yellow": YELLOW})
+
+
 @app.route("/stage.png")
 def stage():
     return send_from_directory(Path(__file__).parent, "stage.png")
