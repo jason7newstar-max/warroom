@@ -127,6 +127,16 @@
     <div id="list"><div class="empty">No takes yet — load a backing track and hit Record.</div></div>
   </div>
 </main>
+
+<!-- ===== 无人值守 hands-free session bar ===== -->
+<div id="hfbar" style="position:fixed;left:0;right:0;bottom:0;z-index:90;display:flex;align-items:center;gap:14px;
+  padding:12px 22px;background:rgba(8,12,16,.92);border-top:1px solid var(--line);backdrop-filter:blur(10px)">
+  <button class="t" id="hfstart" style="font-weight:800">🎙 免唤醒会话:关</button>
+  <div id="hfstate" style="font:700 13px monospace;color:#8a8378">待命</div>
+  <div id="hfsub" style="flex:1;color:#dff7ff;font-size:13px;min-height:18px"></div>
+  <div style="color:rgba(247,244,236,.5);font-size:12px">空格=脚踏(踩一下开始唱) · 说话=指令(免唤醒)</div>
+</div>
+<audio id="bgaudio" style="display:none"></audio>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -490,6 +500,101 @@ setInterval(async()=>{ try{const m=await (await fetch('/api/meter')).json();
 
 window.addEventListener('resize',recomputeScale);
 recomputeScale(); refreshTakes(); tick();
+
+// ============================================================================
+//  无人值守会话引擎 — hands-free session: pedal(space)=SING, speech=COMMAND
+//  (no wake word inside a session; auto-loops back to listen-for-commands)
+// ============================================================================
+(function(){
+  let session=false, hfRec=null, listenOn=false, selPhrase=null, backingGain=1.0;
+  const startBtn=$('#hfstart'), stEl=$('#hfstate'), subEl=$('#hfsub');
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  function setState(s){ STATE_HF=s; stEl.textContent=({listen:'🟢 听指令',sing:'🔴 录唱中',idle:'待命',think:'⏳处理'})[s]||s;
+    fetch('http://127.0.0.1:8092/state',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({state:s})}).catch(()=>{}); }
+  let STATE_HF='idle';
+  function say(t){ subEl.textContent=t; if(!t)return; try{const u=new SpeechSynthesisUtterance(t);u.lang='zh-CN';u.rate=1.06;
+    const v=speechSynthesis.getVoices().find(v=>v.lang.startsWith('zh')); if(v)u.voice=v; speechSynthesis.speak(u);}catch(e){} }
+
+  // continuous command listener (only active in LISTEN state)
+  function startListening(){
+    if(!SR){ subEl.textContent='此浏览器不支持语音(请用 Chrome)'; return; }
+    if(listenOn)return; listenOn=true;
+    const rec=new SR(); rec.lang='zh-CN'; rec.continuous=true; rec.interimResults=false;
+    rec.onresult=async e=>{
+      if(STATE_HF!=='listen')return;
+      const text=e.results[e.results.length-1][0].transcript.trim();
+      if(!text)return;
+      setState('think'); subEl.textContent='你:'+text;
+      try{
+        const r=await fetch('http://127.0.0.1:8092/intent',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text})});
+        const j=await r.json(); await runAction(j);
+      }catch(err){ say('指令服务没连上'); }
+      if(session && STATE_HF==='think') setState('listen');
+    };
+    rec.onerror=()=>{ listenOn=false; if(session) setTimeout(startListening,500); };
+    rec.onend=()=>{ listenOn=false; if(session) setTimeout(startListening,300); };
+    try{ rec.start(); hfRec=rec; }catch(e){ listenOn=false; }
+  }
+  function stopListening(){ listenOn=false; try{hfRec&&hfRec.stop()}catch(e){} hfRec=null; }
+
+  // execute a parsed intent against the existing PHANTOM controls
+  async function runAction(j){
+    const a=j.action, args=j.args||{};
+    if(j.say) say(j.say);
+    switch(a){
+      case 'record_take': stopListening(); await doSing(0,null,false); break;
+      case 'sing_phrase': {
+        let n=args.n; if(n==null && selPhrase) n=selPhrase;
+        const p=phrases.find(x=>x.i===n);
+        if(!p){ say('没找到第'+(n||'?')+'句'); break; }
+        inPoint=p.start; regionEnd=p.end; selPhrase=n; positionRegion();
+        stopListening(); await doSing(p.start, p.end, true); break; }
+      case 'stop': if(mode==='recording'||mode==='punching') finishRecord(mode==='punching'); break;
+      case 'play': $('#play').click(); break;
+      case 'play_from': { const p=phrases.find(x=>x.i===args.n); if(p){ inPoint=p.start; positionRegion(); $('#play').click(); } break; }
+      case 'set_backing_gain': backingGain=Math.max(0.1,Math.min(2.5, backingGain*(args.dir==='down'?0.75:1.33))); say('伴奏 '+Math.round(backingGain*100)+'%'); break;
+      case 'set_monitor': { const b=document.querySelector('.monsty[data-style="'+(args.style||'silk')+'"]'); if(b)b.click(); break; }
+      case 'analyze': $('#analyze').click(); break;
+      case 'pitch': $('#pitchbtn').click(); break;
+      case 'finish': if(!$('#savecomp').disabled) $('#savecomp').click(); say('搞定,文件已存'); break;
+      case 'import_backing': $('#bt').click(); say('请选伴奏文件'); break;
+      case 'end_session': endSession(); break;
+      default: say('这个我没听懂,可以说:录一遍 / 第二句重来 / 听一下 / 出歌');
+    }
+  }
+
+  // SING: pedal-triggered phrase record with count-in + engineer punch reuse
+  async function doSing(from, until, isPunch){
+    setState('sing');
+    if(isPunch){ regionEnd=until; inPoint=from; $('#punch').click(); }
+    else { $('#rec').click(); }
+    // phrase end auto-stop is handled inside finishRecord/punchTimer; we just
+    // flip back to listen when recording returns to idle
+    const back=setInterval(()=>{ if(mode==='idle'){ clearInterval(back); if(session){ setState('listen'); startListening(); } } },200);
+  }
+
+  // SPACE = foot-pedal tap. Tap in LISTEN → sing the selected phrase (or a fresh take).
+  document.addEventListener('keydown',e=>{
+    if(e.code!=='Space' || !session) return;
+    if(e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
+    e.preventDefault();
+    if(STATE_HF==='sing'){ if(mode==='recording'||mode==='punching') finishRecord(mode==='punching'); return; } // tap again = stop
+    if(STATE_HF==='listen'){
+      stopListening();
+      if(selPhrase){ const p=phrases.find(x=>x.i===selPhrase); if(p){ doSing(p.start,p.end,true); return; } }
+      doSing(0,null,false);
+    }
+  });
+
+  function endSession(){ session=false; stopListening(); setState('idle'); startBtn.textContent='🎙 免唤醒会话:关'; startBtn.style.color=''; say('收工'); }
+  startBtn.onclick=()=>{
+    if(session){ endSession(); return; }
+    session=true; startBtn.textContent='🎙 免唤醒会话:开'; startBtn.style.color='#5ad17a';
+    if(!monitoring){ const silk=document.querySelector('.monsty[data-style="silk"]'); if(silk)silk.click(); }
+    setState('listen'); startListening();
+    say('录音棚准备好了。踩脚踏(空格)开始唱,或直接说指令');
+  };
+})();
 </script>
 </body>
 </html>
