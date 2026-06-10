@@ -1,5 +1,6 @@
-# PHANTOM STUDIO
+# PinLA Studio × ONE TEN LAB
 ### 全球首家「无人值守 AI 录音棚」· 加盟 & 合作招募
+*Powered by ONE TEN LAB · 首家旗舰 @ 纽约 PinLA Studio*
 
 ---
 
@@ -38,6 +39,6 @@
 独立录音棚 · KTV/音乐空间转型 · 网红 MCN · 想低门槛入局音乐消费的创业者
 
 ---
-**ONE TEN STUDIO ENTERTAINMENT**
+**PinLA Studio · Powered by ONE TEN LAB**
 有兴趣聊聊？→ info@pinla.org
 *（每个城市优先签约首批合伙人）*
