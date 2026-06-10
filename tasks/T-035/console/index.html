@@ -1,0 +1,2063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>J.A.R.V.I.S. // MISSION CONTROL</title>
+  <meta name="description" content="Stark-inspired holographic HUD for the ONE TEN war room. Voice focus core, real-time task board, telemetry commit logs, and Hue Entertainment sync hooks.">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Share+Tech+Mono&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  
+  <style>
+    /* --- CSS Variables & Design System --- */
+    :root {
+      --bg-dark: #060913;
+      --panel-bg: rgba(8, 14, 27, 0.45);
+      
+      /* Theme: Stark Classic (Default) */
+      --accent-primary: #22d3ee;
+      --accent-primary-rgb: 34, 211, 238;
+      --accent-secondary: #d8b46d;
+      --accent-secondary-rgb: 216, 180, 109;
+      --accent-tertiary: #0d9488;
+      --accent-tertiary-rgb: 13, 148, 136;
+      
+      --glow-primary: rgba(34, 211, 238, 0.15);
+      --glow-secondary: rgba(216, 180, 109, 0.1);
+    }
+    
+    body.theme-stark {
+      --accent-primary: #22d3ee;
+      --accent-primary-rgb: 34, 211, 238;
+      --accent-secondary: #d8b46d;
+      --accent-secondary-rgb: 216, 180, 109;
+      --accent-tertiary: #0d9488;
+      --accent-tertiary-rgb: 13, 148, 136;
+    }
+    
+    body.theme-stealth {
+      --accent-primary: #10b981;
+      --accent-primary-rgb: 16, 185, 129;
+      --accent-secondary: #f59e0b;
+      --accent-secondary-rgb: 245, 158, 11;
+      --accent-tertiary: #334155;
+      --accent-tertiary-rgb: 51, 65, 85;
+    }
+    
+    body.theme-valkyrie {
+      --accent-primary: #ef4444;
+      --accent-primary-rgb: 239, 68, 68;
+      --accent-secondary: #f59e0b;
+      --accent-secondary-rgb: 245, 158, 11;
+      --accent-tertiary: #4b5563;
+      --accent-tertiary-rgb: 75, 85, 99;
+    }
+    
+    body.theme-hyperspace {
+      --accent-primary: #a855f7;
+      --accent-primary-rgb: 168, 85, 247;
+      --accent-secondary: #06b6d4;
+      --accent-secondary-rgb: 6, 182, 212;
+      --accent-tertiary: #6d28d9;
+      --accent-tertiary-rgb: 109, 40, 217;
+    }
+
+    /* --- Base Layout --- */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+    
+    body {
+      background-color: var(--bg-dark);
+      color: #e2e8f0;
+      font-family: 'Inter', sans-serif;
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+      perspective: 1200px;
+    }
+    
+    /* Background grid & Scanline */
+    .grid-bg {
+      position: absolute;
+      top: -10%;
+      left: -10%;
+      width: 120%;
+      height: 120%;
+      background-image: 
+        linear-gradient(rgba(var(--accent-primary-rgb), 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(var(--accent-primary-rgb), 0.02) 1px, transparent 1px);
+      background-size: 45px 45px;
+      background-position: center center;
+      z-index: 1;
+      pointer-events: none;
+      transition: background-image 0.5s ease;
+    }
+    
+    .radial-glow {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 800px;
+      height: 800px;
+      background: radial-gradient(circle, rgba(var(--accent-primary-rgb), 0.06) 0%, rgba(var(--accent-secondary-rgb), 0.02) 40%, rgba(0,0,0,0) 70%);
+      z-index: 2;
+      pointer-events: none;
+      transition: background 0.5s ease;
+    }
+    
+    .scan-line {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 6px;
+      background: linear-gradient(to bottom, rgba(var(--accent-primary-rgb), 0), rgba(var(--accent-primary-rgb), 0.12) 50%, rgba(var(--accent-primary-rgb), 0) 100%);
+      animation: scan 8s linear infinite;
+      z-index: 3;
+      pointer-events: none;
+    }
+    
+    @keyframes scan {
+      0% { transform: translateY(-10vh); }
+      100% { transform: translateY(110vh); }
+    }
+
+    /* Fullscreen canvas background */
+    #bg-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    /* --- Scrollbar styling --- */
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 2px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(var(--accent-primary-rgb), 0.3);
+      border-radius: 2px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(var(--accent-primary-rgb), 0.6);
+    }
+
+    /* --- Header Bar --- */
+    .top-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 65px;
+      background: rgba(4, 8, 16, 0.5);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(var(--accent-primary-rgb), 0.15);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 24px;
+      z-index: 100;
+      transition: border-bottom-color 0.5s ease;
+    }
+    
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .brand-logo {
+      position: relative;
+      width: 22px;
+      height: 22px;
+      border: 2px solid var(--accent-primary);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--accent-primary);
+      transition: all 0.5s ease;
+    }
+    
+    .brand-logo::after {
+      content: '';
+      position: absolute;
+      top: 5px;
+      left: 5px;
+      width: 8px;
+      height: 8px;
+      background: var(--accent-secondary);
+      border-radius: 50%;
+      box-shadow: 0 0 6px var(--accent-secondary);
+      animation: beacon-pulse 2s infinite;
+      transition: all 0.5s ease;
+    }
+    
+    @keyframes beacon-pulse {
+      0%, 100% { opacity: 0.3; transform: scale(0.9); }
+      50% { opacity: 1; transform: scale(1.1); }
+    }
+    
+    .brand-name {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: 17px;
+      letter-spacing: 2px;
+      color: #ffffff;
+      text-shadow: 0 0 6px rgba(255, 255, 255, 0.4);
+    }
+    
+    .brand-name span {
+      color: var(--accent-primary);
+      font-weight: 400;
+      transition: color 0.5s ease;
+    }
+    
+    .top-bar-center {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 12px;
+      color: var(--accent-secondary);
+      letter-spacing: 3px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: color 0.5s ease;
+    }
+    
+    .beacon {
+      width: 8px;
+      height: 8px;
+      background: #10b981;
+      border-radius: 50%;
+      box-shadow: 0 0 10px #10b981;
+      animation: blink 1.8s infinite;
+    }
+    
+    @keyframes blink {
+      0%, 100% { opacity: 0.2; }
+      50% { opacity: 1; }
+    }
+    
+    .top-bar-right {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+    
+    .digital-clock-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+    }
+    
+    #digital-clock {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 21px;
+      color: var(--accent-primary);
+      text-shadow: 0 0 8px rgba(var(--accent-primary-rgb), 0.5);
+      font-weight: bold;
+      transition: color 0.5s ease, text-shadow 0.5s ease;
+    }
+    
+    .clock-ms {
+      font-size: 15px;
+      opacity: 0.7;
+    }
+    
+    #digital-date {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      color: #64748b;
+      letter-spacing: 1px;
+    }
+
+    /* --- Interactive Action Buttons --- */
+    .actions {
+      display: flex;
+      gap: 12px;
+    }
+    
+    .hud-btn {
+      background: rgba(8, 14, 27, 0.6);
+      border: 1px solid rgba(var(--accent-primary-rgb), 0.35);
+      border-radius: 4px;
+      color: var(--accent-primary);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      padding: 6px 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s;
+      outline: none;
+      text-shadow: 0 0 4px rgba(var(--accent-primary-rgb), 0.4);
+      box-shadow: 0 0 6px rgba(var(--accent-primary-rgb), 0.05);
+    }
+    
+    .hud-btn:hover {
+      border-color: var(--accent-primary);
+      background: rgba(var(--accent-primary-rgb), 0.12);
+      box-shadow: 0 0 10px rgba(var(--accent-primary-rgb), 0.25);
+      color: #ffffff;
+    }
+    
+    .hud-btn.muted {
+      color: var(--accent-secondary);
+      border-color: rgba(var(--accent-secondary-rgb), 0.35);
+      text-shadow: 0 0 4px rgba(var(--accent-secondary-rgb), 0.4);
+    }
+    
+    .hud-btn.muted:hover {
+      border-color: var(--accent-secondary);
+      background: rgba(var(--accent-secondary-rgb), 0.12);
+      box-shadow: 0 0 10px rgba(var(--accent-secondary-rgb), 0.25);
+    }
+    
+    /* Spinning animation for resync button */
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .spinning svg {
+      animation: spin 1s linear infinite;
+    }
+
+    /* --- Main Console Layout Grid --- */
+    .hud-layout {
+      position: absolute;
+      top: 85px;
+      left: 20px;
+      right: 20px;
+      bottom: 20px;
+      display: grid;
+      grid-template-columns: 360px 1fr 360px;
+      grid-gap: 20px;
+      z-index: 10;
+      pointer-events: none; /* Let background drift clicks bypass */
+    }
+    
+    /* --- Liquid Glass Floating Panel Spec --- */
+    .floating-panel {
+      pointer-events: auto; /* Re-enable pointer events for controls */
+      position: relative;
+      background: var(--panel-bg);
+      backdrop-filter: blur(14px) saturate(130%);
+      -webkit-backdrop-filter: blur(14px) saturate(130%);
+      border: 1px solid rgba(var(--accent-primary-rgb), 0.25);
+      border-radius: 12px;
+      padding: 18px;
+      box-shadow: 
+        inset 0 1px 2px rgba(255, 255, 255, 0.05),
+        inset 0 0 14px rgba(var(--accent-primary-rgb), 0.04),
+        0 12px 36px rgba(0, 0, 0, 0.75),
+        0 0 25px rgba(var(--accent-primary-rgb), 0.02);
+      transition: border-color 0.4s, box-shadow 0.4s, background-color 0.5s;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transform-style: preserve-3d;
+      will-change: transform;
+    }
+    
+    .floating-panel:hover {
+      border-color: rgba(var(--accent-primary-rgb), 0.45);
+      box-shadow: 
+        inset 0 1px 3px rgba(255, 255, 255, 0.08),
+        inset 0 0 18px rgba(var(--accent-primary-rgb), 0.08),
+        0 16px 48px rgba(0, 0, 0, 0.85),
+        0 0 35px rgba(var(--accent-primary-rgb), 0.06);
+    }
+    
+    /* Parallax reflection sheen overlay */
+    .glass-sheen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      pointer-events: none;
+      z-index: 1;
+      border-radius: 12px;
+      background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0) 80%);
+      transition: background 0.15s ease-out;
+    }
+    
+    .panel-content {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      width: 100%;
+    }
+    
+    /* Panel Headers styling */
+    .panel-header {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 2px;
+      color: var(--accent-primary);
+      border-bottom: 1px dashed rgba(var(--accent-primary-rgb), 0.15);
+      padding-bottom: 8px;
+      margin-bottom: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      text-shadow: 0 0 6px rgba(var(--accent-primary-rgb), 0.35);
+      transition: color 0.5s ease, border-color 0.5s ease;
+    }
+    
+    .panel-header .prefix {
+      color: var(--accent-secondary);
+      text-shadow: 0 0 6px rgba(var(--accent-secondary-rgb), 0.35);
+      transition: color 0.5s ease;
+    }
+
+    /* --- Columns Arrangement --- */
+    .left-column {
+      display: grid;
+      grid-template-rows: 1fr;
+    }
+    
+    .center-column {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      height: 100%;
+    }
+    
+    .right-column {
+      display: grid;
+      grid-template-rows: 1fr 200px;
+      grid-gap: 20px;
+    }
+
+    /* --- TASK BOARD PANEL --- */
+    .task-controls {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    
+    .task-controls input {
+      flex: 1.5;
+    }
+    
+    .task-controls select {
+      flex: 1;
+    }
+    
+    .task-controls input, .task-controls select, .hacker-select {
+      background: rgba(4, 8, 16, 0.65);
+      border: 1px solid rgba(var(--accent-primary-rgb), 0.25);
+      border-radius: 4px;
+      color: #cbd5e1;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      padding: 7px 10px;
+      outline: none;
+      transition: all 0.3s;
+    }
+    
+    .task-controls input:focus, .task-controls select:focus, .hacker-select:focus {
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 8px rgba(var(--accent-primary-rgb), 0.35);
+      color: #ffffff;
+    }
+    
+    .task-list-container {
+      flex: 1;
+      overflow-y: auto;
+      padding-right: 4px;
+      mask-image: linear-gradient(to bottom, transparent 0%, black 15px, black calc(100% - 15px), transparent 100%);
+      -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15px, black calc(100% - 15px), transparent 100%);
+    }
+    
+    .task-card {
+      position: relative;
+      background: rgba(6, 10, 18, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-left-width: 4px;
+      border-radius: 6px;
+      padding: 12px;
+      margin: 8px 0;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+      overflow: hidden;
+    }
+    
+    .task-card:hover {
+      background: rgba(6, 10, 18, 0.7);
+      transform: translateX(4px);
+    }
+    
+    /* Dynamic task states glows */
+    .task-card.status-done { border-left-color: #10b981; }
+    .task-card.status-done:hover { 
+      border-color: rgba(16, 185, 129, 0.3) rgba(16, 185, 129, 0.3) rgba(16, 185, 129, 0.3) #10b981;
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.15);
+    }
+    
+    .task-card.status-in-progress { border-left-color: #d8b46d; }
+    .task-card.status-in-progress:hover { 
+      border-color: rgba(216, 180, 109, 0.3) rgba(216, 180, 109, 0.3) rgba(216, 180, 109, 0.3) #d8b46d;
+      box-shadow: 0 0 10px rgba(216, 180, 109, 0.15);
+    }
+    
+    .task-card.status-review { border-left-color: #a855f7; }
+    .task-card.status-review:hover { 
+      border-color: rgba(168, 85, 247, 0.3) rgba(168, 85, 247, 0.3) rgba(168, 85, 247, 0.3) #a855f7;
+      box-shadow: 0 0 10px rgba(168, 85, 247, 0.15);
+    }
+    
+    .task-card.status-todo { border-left-color: #06b6d4; }
+    .task-card.status-todo:hover { 
+      border-color: rgba(6, 182, 212, 0.3) rgba(6, 182, 212, 0.3) rgba(6, 182, 212, 0.3) #06b6d4;
+      box-shadow: 0 0 10px rgba(6, 182, 212, 0.15);
+    }
+    
+    .task-card.status-blocked { border-left-color: #ef4444; }
+    .task-card.status-blocked:hover { 
+      border-color: rgba(239, 68, 68, 0.3) rgba(239, 68, 68, 0.3) rgba(239, 68, 68, 0.3) #ef4444;
+      box-shadow: 0 0 10px rgba(239, 68, 68, 0.15);
+    }
+    
+    .task-card.status-idea { border-left-color: #94a3b8; }
+    .task-card.status-idea:hover { 
+      border-color: rgba(148, 163, 184, 0.3) rgba(148, 163, 184, 0.3) rgba(148, 163, 184, 0.3) #94a3b8;
+      box-shadow: 0 0 10px rgba(148, 163, 184, 0.15);
+    }
+    
+    .task-header {
+      display: flex;
+      justify-content: space-between;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      margin-bottom: 6px;
+    }
+    
+    .task-id {
+      color: var(--accent-primary);
+      font-weight: bold;
+    }
+    
+    .task-owner {
+      color: #94a3b8;
+    }
+    
+    .task-title {
+      font-size: 12px;
+      font-weight: 500;
+      color: #ffffff;
+      line-height: 1.4;
+      margin-bottom: 8px;
+    }
+    
+    .task-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .task-status-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+    }
+    
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+    
+    .status-name {
+      color: #64748b;
+    }
+    
+    .task-emoji {
+      font-size: 12px;
+    }
+    
+    .empty-state {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 12px;
+      color: #475569;
+    }
+
+    /* --- CENTRAL VOICE CORE (ARC REACTOR) --- */
+    .central-core-panel {
+      width: 380px;
+      height: 470px;
+      margin-top: 10px;
+      align-self: center;
+    }
+    
+    .core-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      border-bottom: 1px dashed rgba(var(--accent-primary-rgb), 0.15);
+      padding-bottom: 6px;
+    }
+    
+    .core-header .prefix {
+      color: var(--accent-secondary);
+    }
+    
+    .core-header .status-text {
+      color: var(--accent-primary);
+      text-shadow: 0 0 5px rgba(var(--accent-primary-rgb), 0.4);
+    }
+    
+    .canvas-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 320px;
+      position: relative;
+    }
+    
+    #core-canvas {
+      width: 320px;
+      height: 320px;
+      cursor: pointer;
+    }
+    
+    .core-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: -10px;
+    }
+    
+    .state-selector {
+      display: flex;
+      gap: 5px;
+    }
+    
+    .state-selector .btn {
+      flex: 1;
+      background: rgba(4, 8, 16, 0.6);
+      border: 1px solid rgba(var(--accent-primary-rgb), 0.2);
+      border-radius: 4px;
+      color: #64748b;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      padding: 6px 0;
+      cursor: pointer;
+      transition: all 0.25s;
+      outline: none;
+    }
+    
+    .state-selector .btn:hover {
+      border-color: rgba(var(--accent-primary-rgb), 0.45);
+      color: #e2e8f0;
+    }
+    
+    .state-selector .btn.active {
+      background: rgba(var(--accent-primary-rgb), 0.15);
+      border-color: var(--accent-primary);
+      color: var(--accent-primary);
+      font-weight: bold;
+      box-shadow: inset 0 0 8px rgba(var(--accent-primary-rgb), 0.2), 0 0 10px rgba(var(--accent-primary-rgb), 0.15);
+      text-shadow: 0 0 5px rgba(var(--accent-primary-rgb), 0.5);
+    }
+    
+    .level-slider-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    
+    .level-slider-wrapper label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      color: var(--accent-secondary);
+      display: flex;
+      justify-content: space-between;
+    }
+    
+    .level-slider-wrapper input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 2px;
+      outline: none;
+    }
+    
+    .level-slider-wrapper input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 12px;
+      height: 12px;
+      background: var(--accent-primary);
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 0 8px var(--accent-primary);
+      transition: transform 0.15s;
+    }
+    
+    .level-slider-wrapper input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.3);
+    }
+
+    /* --- METRICS PANEL (BOTTOM CENTER) --- */
+    .metrics-panel {
+      width: 440px;
+      height: 180px;
+      margin-bottom: 10px;
+      align-self: center;
+    }
+    
+    .gauges-container {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      gap: 15px;
+      padding: 10px 0;
+      flex: 1;
+    }
+    
+    .gauge-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .gauge-label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      color: var(--accent-secondary);
+      letter-spacing: 1px;
+      transition: color 0.5s ease;
+    }
+    
+    .radial-gauge {
+      width: 85px;
+      height: 85px;
+    }
+    
+    .gauge-bg {
+      fill: none;
+      stroke: rgba(255, 255, 255, 0.04);
+      stroke-width: 5;
+    }
+    
+    .gauge-fill {
+      fill: none;
+      stroke-width: 5.5;
+      stroke-linecap: round;
+      stroke-dasharray: 251.2; /* 2 * PI * r (r=40) */
+      stroke-dashoffset: 251.2;
+      transform: rotate(-90deg);
+      transform-origin: 50px 50px;
+      transition: stroke-dashoffset 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    
+    .cyan-gauge {
+      stroke: var(--accent-primary);
+      filter: drop-shadow(0 0 4px rgba(var(--accent-primary-rgb), 0.5));
+    }
+    
+    .gold-gauge {
+      stroke: var(--accent-secondary);
+      filter: drop-shadow(0 0 4px rgba(var(--accent-secondary-rgb), 0.5));
+    }
+    
+    .green-gauge {
+      stroke: #10b981;
+      filter: drop-shadow(0 0 4px rgba(16, 185, 129, 0.5));
+    }
+    
+    .gauge-text {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      text-anchor: middle;
+    }
+    
+    .cyan-text { fill: var(--accent-primary); text-shadow: 0 0 4px rgba(var(--accent-primary-rgb), 0.4); }
+    .gold-text { fill: var(--accent-secondary); text-shadow: 0 0 4px rgba(var(--accent-secondary-rgb), 0.4); }
+    .green-text { fill: #10b981; text-shadow: 0 0 4px rgba(16, 185, 129, 0.4); }
+
+    /* --- TELEMETRY / COMMITS STREAM PANEL --- */
+    .commit-list-container {
+      flex: 1;
+      overflow-y: auto;
+      padding-right: 4px;
+      mask-image: linear-gradient(to bottom, transparent 0%, black 15px, black calc(100% - 15px), transparent 100%);
+      -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15px, black calc(100% - 15px), transparent 100%);
+    }
+    
+    .commit-item {
+      position: relative;
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(var(--accent-primary-rgb), 0.05);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 13px;
+      transition: background-color 0.2s, border-color 0.5s;
+      animation: slideIn 0.35s ease-out both;
+    }
+    
+    .commit-item:hover {
+      background-color: rgba(var(--accent-primary-rgb), 0.04);
+    }
+    
+    .commit-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+    
+    .commit-sha {
+      color: var(--accent-secondary);
+      font-weight: bold;
+      cursor: pointer;
+      border: 1px solid rgba(var(--accent-secondary-rgb), 0.3);
+      padding: 0 4px;
+      border-radius: 3px;
+      font-size: 11px;
+      transition: all 0.3s;
+    }
+    
+    .commit-sha:hover {
+      background: rgba(var(--accent-secondary-rgb), 0.12);
+      box-shadow: 0 0 6px rgba(var(--accent-secondary-rgb), 0.4);
+    }
+    
+    .commit-author {
+      color: var(--accent-primary);
+      font-weight: 500;
+      transition: color 0.5s ease;
+    }
+    
+    .commit-time {
+      color: #64748b;
+      font-size: 11px;
+    }
+    
+    .commit-msg {
+      color: #cbd5e1;
+      word-break: break-word;
+      line-height: 1.45;
+    }
+    
+    @keyframes slideIn {
+      from { transform: translateY(12px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* --- HUE DIAGNOSTICS PANEL --- */
+    .hue-diagnostics-panel {
+      height: 100%;
+    }
+    
+    .diagnostics-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .diag-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 12px;
+    }
+    
+    .diag-label {
+      color: #64748b;
+    }
+    
+    .diag-value {
+      color: var(--accent-primary);
+      font-weight: bold;
+    }
+    
+    .color-palette-preview {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .color-swatch-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .color-swatch {
+      width: 28px;
+      height: 28px;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: background-color 0.4s, box-shadow 0.4s;
+    }
+    
+    .swatch-label {
+      font-size: 8px;
+      color: #475569;
+      text-align: center;
+      line-height: 1.1;
+    }
+    
+    .oscilloscope-wrapper {
+      margin-top: 10px;
+      border: 1px solid rgba(var(--accent-primary-rgb), 0.15);
+      border-radius: 6px;
+      background: rgba(4, 8, 16, 0.45);
+      height: 55px;
+      overflow: hidden;
+    }
+    
+    #osc-canvas {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body class="theme-stark">
+  
+  <!-- HUD Ambience -->
+  <div class="grid-bg"></div>
+  <div class="radial-glow"></div>
+  <div class="scan-line"></div>
+  <canvas id="bg-canvas"></canvas>
+
+  <!-- Top Navigation / Status bar -->
+  <header class="top-bar">
+    <div class="brand">
+      <div class="brand-logo" onclick="playBeep(1100, 0.15, 'sine', 0.05)"></div>
+      <h1 class="brand-name">J.A.R.V.I.S. <span>// MISSION CONTROL</span></h1>
+    </div>
+    
+    <div class="top-bar-center">
+      <div class="beacon"></div>
+      <span>ONE TEN COCKPIT STATUS: ONLINE</span>
+    </div>
+    
+    <div class="top-bar-right">
+      <div class="digital-clock-wrapper">
+        <div id="digital-clock">00:00:00<span class="clock-ms">.00</span></div>
+        <div id="digital-date">WED, JUN 10</div>
+      </div>
+      <div class="actions">
+        <!-- Sound control -->
+        <button id="mute-btn" class="hud-btn" onclick="toggleMute()" title="TOGGLE SOUND EFFECTS">
+          <svg id="mute-icon" viewBox="0 0 24 24" width="14" height="14">
+            <path fill="currentColor" d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.85 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.77 16.5,12M3,9V15H7L12,20V4L7,9H3Z" />
+          </svg>
+          <span id="mute-text">AUDIO: ON</span>
+        </button>
+        
+        <!-- Live resync data -->
+        <button id="refresh-btn" class="hud-btn" onclick="triggerManualRefresh()" title="FORCE DATA SYNC">
+          <svg viewBox="0 0 24 24" width="14" height="14">
+            <path fill="currentColor" d="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z" />
+          </svg>
+          <span>SYNC</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- HUD Core Dashboard Layout -->
+  <main class="hud-layout">
+    
+    <!-- LEFT PANEL: Task Cards Board -->
+    <section class="left-column">
+      <div class="floating-panel task-board-panel" data-depth="0.6">
+        <div class="glass-sheen"></div>
+        <div class="panel-content">
+          <div class="panel-header">
+            <span>ACTIVE TASKS BOARD</span>
+            <span class="prefix">OP_LOG //</span>
+          </div>
+          
+          <div class="task-controls">
+            <input type="text" id="task-search" placeholder="SEARCH ID/TITLE/OWNER..." oninput="onTaskSearch()">
+            <select id="task-filter" onchange="onTaskFilter()">
+              <option value="all">ALL STATUS</option>
+              <option value="active">ACTIVE ONLY</option>
+              <option value="completed">COMPLETED ONLY</option>
+            </select>
+          </div>
+          
+          <div class="task-list-container" id="task-list">
+            <!-- Dynamically populated -->
+            <div class="empty-state">ESTABLISHING DATA LAYER CONNECTION...</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CENTER PANEL: ARC REACTOR & ANALYTICS -->
+    <section class="center-column">
+      
+      <!-- Reactive Arc Reactor Core -->
+      <div class="floating-panel central-core-panel" data-depth="1.3">
+        <div class="glass-sheen"></div>
+        <div class="panel-content">
+          <div class="core-header">
+            <span class="prefix">ARK_REACTOR //</span>
+            <span class="status-text" id="core-status-display">CORE STATE: IDLE</span>
+          </div>
+          
+          <div class="canvas-wrapper">
+            <canvas id="core-canvas" width="320" height="320"></canvas>
+          </div>
+          
+          <div class="core-controls">
+            <div class="state-selector">
+              <button class="btn active" onclick="changeState('idle')">IDLE</button>
+              <button class="btn" onclick="changeState('listening')">LISTEN</button>
+              <button class="btn" onclick="changeState('speaking')">SPEAK</button>
+              <button class="btn" onclick="changeState('working')">WORK</button>
+            </div>
+            
+            <div class="level-slider-wrapper">
+              <label>
+                <span>CORE DYNAMICS LEVEL</span>
+                <span><span id="level-val">0.05</span> V</span>
+              </label>
+              <input type="range" id="level-slider" min="0" max="1" step="0.01" value="0.05" oninput="updateManualLevel(this.value)">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Telemetry Progress metrics -->
+      <div class="floating-panel metrics-panel" data-depth="0.95">
+        <div class="glass-sheen"></div>
+        <div class="panel-content">
+          <div class="panel-header">
+            <span>SYS_DIAG // TELEMETRY STATUS</span>
+            <span class="prefix">LIVE_STATS</span>
+          </div>
+          
+          <div class="gauges-container">
+            <div class="gauge-wrapper" title="Completed tasks vs overall tasks">
+              <span class="gauge-label">OPS_COMPLETED</span>
+              <svg class="radial-gauge" viewBox="0 0 100 100">
+                <circle class="gauge-bg" cx="50" cy="50" r="40" />
+                <circle class="gauge-fill cyan-gauge" id="gauge-tasks" cx="50" cy="50" r="40" />
+                <text class="gauge-text cyan-text" id="gauge-tasks-text" x="50" y="55">0%</text>
+              </svg>
+            </div>
+            
+            <div class="gauge-wrapper" title="Simulated CPU/Memory workspace loads">
+              <span class="gauge-label">LOAD_INDEX</span>
+              <svg class="radial-gauge" viewBox="0 0 100 100">
+                <circle class="gauge-bg" cx="50" cy="50" r="40" />
+                <circle class="gauge-fill gold-gauge" id="gauge-load" cx="50" cy="50" r="40" />
+                <text class="gauge-text gold-text" id="gauge-load-text" x="50" y="55">45%</text>
+              </svg>
+            </div>
+            
+            <div class="gauge-wrapper" title="Exposed Hue accent hooks output status">
+              <span class="gauge-label">HUE_SYNC</span>
+              <svg class="radial-gauge" viewBox="0 0 100 100">
+                <circle class="gauge-bg" cx="50" cy="50" r="40" />
+                <circle class="gauge-fill green-gauge" id="gauge-sync" cx="50" cy="50" r="40" />
+                <text class="gauge-text green-text" id="gauge-sync-text" x="50" y="55">ON</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+    </section>
+
+    <!-- RIGHT PANEL: TELEMETRY STREAM & HUE HOOKS -->
+    <section class="right-column">
+      
+      <!-- Scrolling Commit Logs Feed -->
+      <div class="floating-panel commits-panel" data-depth="0.75">
+        <div class="glass-sheen"></div>
+        <div class="panel-content">
+          <div class="panel-header">
+            <span>COMMIT TELEMETRY</span>
+            <span class="prefix">GIT_FEED //</span>
+          </div>
+          
+          <div class="commit-list-container" id="commit-list">
+            <!-- Dynamically populated -->
+            <div class="empty-state">ESTABLISHING TELEMETRY CONNECTION...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hue Local Integration Diagnostics -->
+      <div class="floating-panel hue-diagnostics-panel" data-depth="0.5">
+        <div class="glass-sheen"></div>
+        <div class="panel-content">
+          <div class="panel-header">
+            <span>HUE ENT. SYNC DIALOG</span>
+            <span class="prefix">BRIDGE //</span>
+          </div>
+          
+          <div class="diagnostics-grid">
+            <div class="diag-item">
+              <span class="diag-label">AUDIO LEVEL:</span>
+              <span class="diag-value" id="diag-audio-level">0.00</span>
+            </div>
+            <div class="diag-item">
+              <span class="diag-label">DOMINANT SWATCHES:</span>
+              <div class="color-palette-preview" id="palette-preview"></div>
+            </div>
+            <div class="diag-item">
+              <span class="diag-label">THEME SECTOR:</span>
+              <select id="theme-selector" class="hacker-select" onchange="changeTheme(this.value)">
+                <option value="stark">STARK CLASSIC (CYAN/GOLD)</option>
+                <option value="stealth">STEALTH MODE (EMERALD/AMBER)</option>
+                <option value="valkyrie">VALKYRIE RED (CRIMSON/AMBER)</option>
+                <option value="hyperspace">HYPER SPACE (PURPLE/CYAN)</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="oscilloscope-wrapper">
+            <canvas id="osc-canvas"></canvas>
+          </div>
+        </div>
+      </div>
+      
+    </section>
+  </main>
+
+  <!-- Data wire -->
+  <script src="data.js"></script>
+  
+  <!-- Core Logic Engine -->
+  <script>
+    // --- Globals & State management ---
+    window._coreState = 'idle';
+    window._audioLevel = 0.05;
+    let audioMuted = false;
+    let currentTheme = 'stark';
+    
+    // Theme palette mappings matching the body classes
+    const THEME_COLORS = {
+      stark: [[34, 211, 238], [216, 180, 109], [13, 148, 136]],
+      stealth: [[16, 185, 129], [245, 158, 11], [51, 65, 85]],
+      valkyrie: [[239, 68, 68], [245, 158, 11], [75, 85, 99]],
+      hyperspace: [[168, 85, 247], [6, 182, 212], [109, 40, 217]]
+    };
+
+    // --- Expose Hue-hook API Contract ---
+    window.jarvisColors = function() {
+      return THEME_COLORS[currentTheme];
+    };
+    
+    window.jarvisAudioLevel = function() {
+      return window._audioLevel;
+    };
+    
+    window.setCoreLevel = function(val) {
+      const num = parseFloat(val);
+      if (!isNaN(num)) {
+        window._audioLevel = Math.max(0, Math.min(1, num));
+        
+        // Update slider and display value
+        const slider = document.getElementById('level-slider');
+        if (slider) slider.value = window._audioLevel;
+        const valText = document.getElementById('level-val');
+        if (valText) valText.innerText = window._audioLevel.toFixed(2);
+        
+        // Update diagnostics text
+        const diagVal = document.getElementById('diag-audio-level');
+        if (diagVal) diagVal.innerText = window._audioLevel.toFixed(4);
+      }
+    };
+    
+    window.setCoreState = function(state) {
+      if (['idle', 'listening', 'speaking', 'working'].includes(state)) {
+        window._coreState = state;
+        
+        // Play synthesized HUD transition sound
+        playStateSound(state);
+        
+        // Update core state buttons inside panel
+        const buttons = document.querySelectorAll('.state-selector .btn');
+        buttons.forEach(btn => {
+          const matchText = btn.innerText.toLowerCase();
+          if (matchText === state || 
+              (state === 'listening' && matchText === 'listen') || 
+              (state === 'speaking' && matchText === 'speak') ||
+              (state === 'working' && matchText === 'work')) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        });
+        
+        // Update status text
+        const display = document.getElementById('core-status-display');
+        if (display) display.innerText = `CORE STATE: ${state.toUpperCase()}`;
+      }
+    };
+
+    // --- Web Audio sound synthesis ---
+    let audioCtx = null;
+    
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    }
+    
+    function playBeep(freq, duration, type = 'sine', vol = 0.03) {
+      if (audioMuted) return;
+      initAudio();
+      if (!audioCtx) return;
+      
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {
+        console.warn("Audio Context blocked or unsupported:", e);
+      }
+    }
+    
+    function playStateSound(state) {
+      if (audioMuted) return;
+      initAudio();
+      if (!audioCtx) return;
+      
+      try {
+        const now = audioCtx.currentTime;
+        if (state === 'working') {
+          // Complex rising technological sweep
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.frequency.setValueAtTime(220, now);
+          osc.frequency.exponentialRampToValueAtTime(780, now + 0.45);
+          gain.gain.setValueAtTime(0.02, now);
+          gain.gain.exponentialRampToValueAtTime(0.00001, now + 0.5);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start();
+          osc.stop(now + 0.5);
+        } else if (state === 'listening') {
+          // Double chirp
+          playBeep(659.25, 0.08, 'sine', 0.025); // E5
+          setTimeout(() => playBeep(880, 0.12, 'sine', 0.025), 75); // A5
+        } else if (state === 'speaking') {
+          // Soft square blip
+          playBeep(440, 0.15, 'triangle', 0.03); // A4
+        } else if (state === 'idle') {
+          // Power down descending sweep
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.frequency.setValueAtTime(330, now);
+          osc.frequency.exponentialRampToValueAtTime(110, now + 0.4);
+          gain.gain.setValueAtTime(0.02, now);
+          gain.gain.exponentialRampToValueAtTime(0.00001, now + 0.45);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start();
+          osc.stop(now + 0.45);
+        }
+      } catch (e) {}
+    }
+    
+    function toggleMute() {
+      audioMuted = !audioMuted;
+      const btn = document.getElementById('mute-btn');
+      const icon = document.getElementById('mute-icon');
+      const text = document.getElementById('mute-text');
+      
+      if (audioMuted) {
+        if (btn) btn.classList.add('muted');
+        if (text) text.innerText = 'AUDIO: OFF';
+        if (icon) {
+          icon.innerHTML = '<path fill="currentColor" d="M12,4L9.91,6.09L12,8.18M4.27,3L3,4.27L7.73,9H3V15H7L12,20V13.27L16.25,17.53C15.58,18.04 14.83,18.45 14,18.7V20.77C15.38,20.44 16.63,19.78 17.7,18.9L20.73,21.93L22,20.66L4.27,3M14,3.23V5.29C14.87,5.55 15.68,6 16.39,6.58L14.85,8.12C14.59,7.93 14.3,7.77 14,7.66V9.66L19,14.66C19,13.8 19,12.92 19,12C19,7.72 16,4.14 14,3.23M16.5,12C16.5,11.23 16.19,10.5 15.69,10L14,8.31V11.31L16.21,13.52C16.39,13.06 16.5,12.55 16.5,12Z" />';
+        }
+      } else {
+        if (btn) btn.classList.remove('muted');
+        if (text) text.innerText = 'AUDIO: ON';
+        if (icon) {
+          icon.innerHTML = '<path fill="currentColor" d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.85 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.77 16.5,12M3,9V15H7L12,20V4L7,9H3Z" />';
+        }
+        playBeep(880, 0.1, 'sine', 0.03);
+      }
+    }
+
+    // --- Theme Control ---
+    function changeTheme(themeName) {
+      if (THEME_COLORS[themeName]) {
+        currentTheme = themeName;
+        document.body.className = `theme-${themeName}`;
+        
+        // Play interactive sound feedback
+        playBeep(880, 0.12, 'sine', 0.03);
+        setTimeout(() => playBeep(1320, 0.15, 'sine', 0.03), 85);
+        
+        // Refresh Palette preview & Diagnostics
+        renderHuePalette();
+      }
+    }
+
+    // --- HTML Escaping helper ---
+    function escapeHTML(str) {
+      if (!str) return '';
+      return str.replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+    }
+
+    // --- Relative timestamp helper ---
+    function timeAgo(dateString) {
+      if (!dateString) return '';
+      const now = new Date();
+      const date = new Date(dateString);
+      const seconds = Math.floor((now - date) / 1000);
+      if (seconds < 60) return 'JUST NOW';
+      const minutes = Math.floor(seconds / 60);
+      if (minutes < 60) return `${minutes}M AGO`;
+      const hours = Math.floor(minutes / 60);
+      if (hours < 24) return `${hours}H AGO`;
+      const days = Math.floor(hours / 24);
+      return `${days}D AGO`;
+    }
+
+    // --- Status colors selector ---
+    function getStatusColor(status) {
+      switch (status) {
+        case 'done': return '#10b981';
+        case 'in-progress': return 'var(--accent-secondary)';
+        case 'review': return '#a855f7';
+        case 'todo': return 'var(--accent-primary)';
+        case 'blocked': return '#ef4444';
+        case 'idea': return '#64748b';
+        default: return 'var(--accent-primary)';
+      }
+    }
+
+    // --- Data Rendering Engine ---
+    let tasksCache = [];
+    let commitsCache = [];
+
+    function renderTasks(tasks) {
+      const container = document.getElementById('task-list');
+      const searchVal = document.getElementById('task-search')?.value.toLowerCase() || '';
+      const filterVal = document.getElementById('task-filter')?.value || 'all';
+      
+      if (!container) return;
+      
+      // Calculate statistics
+      const total = tasks.length;
+      const completed = tasks.filter(t => t.status === 'done').length;
+      
+      // Update SVG Progress meters
+      updateMetrics(completed, total);
+      
+      // Apply search & status constraints
+      const filtered = tasks.filter(t => {
+        const matchesSearch = t.id.toLowerCase().includes(searchVal) || 
+                              t.title.toLowerCase().includes(searchVal) || 
+                              t.owner.toLowerCase().includes(searchVal);
+        
+        let matchesStatus = true;
+        if (filterVal === 'active') {
+          matchesStatus = t.status !== 'done';
+        } else if (filterVal === 'completed') {
+          matchesStatus = t.status === 'done';
+        }
+        
+        return matchesSearch && matchesStatus;
+      });
+      
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="empty-state">NO MATCHING TASKS FOUND</div>`;
+        return;
+      }
+      
+      container.innerHTML = filtered.map(t => {
+        const statusColor = getStatusColor(t.status);
+        const cardClass = `task-card status-${t.status}`;
+        
+        return `
+          <div class="${cardClass}" onclick="playBeep(990, 0.05, 'sine', 0.015)">
+            <div class="task-header">
+              <span class="task-id">${t.id}</span>
+              <span class="task-owner">${t.owner ? '@' + escapeHTML(t.owner) : 'UNASSIGNED'}</span>
+            </div>
+            <div class="task-title">${escapeHTML(t.title)}</div>
+            <div class="task-footer">
+              <div class="task-status-badge">
+                <span class="status-dot" style="background-color: ${statusColor}; box-shadow: 0 0 8px ${statusColor};"></span>
+                <span class="status-name">${(t.status || 'unknown').toUpperCase()}</span>
+              </div>
+              <span class="task-emoji">${t.statusEmoji || '⚪'}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderCommits(commits) {
+      const container = document.getElementById('commit-list');
+      if (!container) return;
+      
+      if (commits.length === 0) {
+        container.innerHTML = `<div class="empty-state">NO COMMITS REGISTERED</div>`;
+        return;
+      }
+      
+      container.innerHTML = commits.map((c, index) => {
+        return `
+          <div class="commit-item" style="animation-delay: ${index * 0.04}s">
+            <div class="commit-meta">
+              <span class="commit-sha" onclick="window.open('https://github.com/jason7newstar-max/warroom/commit/${c.sha}', '_blank')">${c.sha}</span>
+              <span class="commit-author">@${escapeHTML(c.author)}</span>
+              <span class="commit-time">${timeAgo(c.date)}</span>
+            </div>
+            <div class="commit-msg">${escapeHTML(c.message)}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderHuePalette() {
+      const container = document.getElementById('palette-preview');
+      if (!container) return;
+      
+      const colors = window.jarvisColors();
+      container.innerHTML = colors.map((rgb, idx) => {
+        const type = idx === 0 ? 'PRIMARY' : (idx === 1 ? 'ACCENT' : 'SUPPORT');
+        const colorStr = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
+        return `
+          <div class="color-swatch-wrapper">
+            <div class="color-swatch" style="background-color: ${colorStr}; box-shadow: 0 0 10px ${colorStr};"></div>
+            <span class="swatch-label">${type}<br>${rgb.join(',')}</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // --- Search & Filter Triggers ---
+    function onTaskSearch() {
+      renderTasks(tasksCache);
+    }
+    
+    function onTaskFilter() {
+      renderTasks(tasksCache);
+    }
+
+    // --- Manual Data Resync ---
+    async function triggerManualRefresh() {
+      const btn = document.getElementById('refresh-btn');
+      if (btn) btn.classList.add('spinning');
+      
+      playBeep(660, 0.05, 'sine', 0.02);
+      
+      try {
+        const [t, c] = await Promise.all([
+          window.WarRoomData.tasks(),
+          window.WarRoomData.commits()
+        ]);
+        
+        tasksCache = t;
+        commitsCache = c;
+        
+        renderTasks(tasksCache);
+        renderCommits(commitsCache);
+        renderHuePalette();
+        
+        // Success audio chime
+        playBeep(880, 0.08, 'sine', 0.02);
+        setTimeout(() => playBeep(1200, 0.12, 'sine', 0.02), 75);
+      } catch (e) {
+        console.error("Dashboard manual refresh failed:", e);
+        playBeep(180, 0.35, 'sawtooth', 0.04);
+      } finally {
+        if (btn) {
+          setTimeout(() => btn.classList.remove('spinning'), 800);
+        }
+      }
+    }
+
+    // --- System clock & calendar updates ---
+    function updateClock() {
+      const clockEl = document.getElementById('digital-clock');
+      const dateEl = document.getElementById('digital-date');
+      if (!clockEl) return;
+      
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      const ms = String(Math.floor(now.getMilliseconds() / 10)).padStart(2, '0');
+      
+      clockEl.innerHTML = `${hours}:${minutes}:${seconds}<span class="clock-ms">.${ms}</span>`;
+      
+      if (dateEl) {
+        const options = { year: 'numeric', month: 'short', day: 'numeric', weekday: 'short' };
+        dateEl.innerText = now.toLocaleDateString('en-US', options).toUpperCase();
+      }
+    }
+
+    // --- SVG Telemetry Meters ---
+    function updateMetrics(completed, total) {
+      const ring = document.getElementById('gauge-tasks');
+      const text = document.getElementById('gauge-tasks-text');
+      if (ring && text) {
+        const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
+        text.innerText = `${pct}%`;
+        const offset = 251.2 - (pct / 100) * 251.2;
+        ring.style.strokeDashoffset = offset;
+      }
+    }
+
+    let lastLoadUpdate = 0;
+    let currentLoad = 45;
+    function updateLoadIndex() {
+      const now = Date.now();
+      if (now - lastLoadUpdate > 1600) {
+        currentLoad = Math.floor(35 + Math.random() * 25);
+        lastLoadUpdate = now;
+        
+        const ring = document.getElementById('gauge-load');
+        const text = document.getElementById('gauge-load-text');
+        if (ring && text) {
+          text.innerText = `${currentLoad}%`;
+          const offset = 251.2 - (currentLoad / 100) * 251.2;
+          ring.style.strokeDashoffset = offset;
+        }
+      }
+    }
+
+    function updateHueSyncGauge() {
+      const ring = document.getElementById('gauge-sync');
+      const text = document.getElementById('gauge-sync-text');
+      if (ring && text) {
+        const time = Date.now();
+        // Pulsate sync rate indicator
+        const syncLevel = 82 + Math.sin(time * 0.004) * 12;
+        const offset = 251.2 - (syncLevel / 100) * 251.2;
+        ring.style.strokeDashoffset = offset;
+        text.style.opacity = 0.7 + Math.sin(time * 0.007) * 0.3;
+      }
+    }
+
+    // --- State & dynamic level controls ---
+    function changeState(state) {
+      window.setCoreState(state);
+    }
+    
+    let lastManualLevelTime = 0;
+    function updateManualLevel(val) {
+      lastManualLevelTime = Date.now();
+      window.setCoreLevel(val);
+    }
+
+    // --- Mouse Parallax & Sheen translations ---
+    let targetMouseX = 0, targetMouseY = 0;
+    let mouseX = 0, mouseY = 0;
+    
+    window.addEventListener('mousemove', (e) => {
+      targetMouseX = (e.clientX - window.innerWidth / 2) / (window.innerWidth / 2);
+      targetMouseY = (e.clientY - window.innerHeight / 2) / (window.innerHeight / 2);
+    });
+    
+    window.addEventListener('touchmove', (e) => {
+      if (e.touches.length > 0) {
+        targetMouseX = (e.touches[0].clientX - window.innerWidth / 2) / (window.innerWidth / 2);
+        targetMouseY = (e.touches[0].clientY - window.innerHeight / 2) / (window.innerHeight / 2);
+      }
+    });
+
+    const lerp = (start, end, amt) => (1 - amt) * start + amt * end;
+
+    function handleParallax() {
+      mouseX = lerp(mouseX, targetMouseX, 0.07);
+      mouseY = lerp(mouseY, targetMouseY, 0.07);
+      
+      const time = Date.now() * 0.0008;
+      const panels = document.querySelectorAll('.floating-panel');
+      
+      panels.forEach((panel, idx) => {
+        const depth = parseFloat(panel.getAttribute('data-depth') || '1');
+        // Slow autonomous Lissajous drift
+        const autoX = Math.sin(time + idx * 1.5) * 5;
+        const autoY = Math.cos(time * 0.8 + idx * 2.2) * 5;
+        
+        const px = mouseX * 22 * depth + autoX;
+        const py = mouseY * 22 * depth + autoY;
+        
+        // 3D holographic tilt angles
+        const tiltX = -mouseY * 4 * depth;
+        const tiltY = mouseX * 4 * depth;
+        
+        panel.style.transform = `translate3d(${px}px, ${py}px, 0) rotateX(${tiltX}deg) rotateY(${tiltY}deg)`;
+        
+        // Update light sheen mapping
+        const sheen = panel.querySelector('.glass-sheen');
+        if (sheen) {
+          const sheenX = (-mouseX * 40 + 50);
+          const sheenY = (-mouseY * 40 + 50);
+          sheen.style.background = `radial-gradient(circle at ${sheenX}% ${sheenY}%, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 80%)`;
+        }
+      });
+    }
+
+    // --- Canvas Drawing: Background Haze System ---
+    const bgCanvas = document.getElementById('bg-canvas');
+    const bgCtx = bgCanvas.getContext('2d');
+    let bgParticles = [];
+
+    function initBgParticles() {
+      bgParticles = [];
+      const density = 40;
+      for (let i = 0; i < density; i++) {
+        bgParticles.push({
+          x: Math.random() * window.innerWidth,
+          y: Math.random() * window.innerHeight,
+          vx: (Math.random() - 0.5) * 0.25,
+          vy: (Math.random() - 0.5) * 0.25 - 0.08,
+          size: Math.random() * 2 + 1,
+          alpha: Math.random() * 0.45 + 0.1
+        });
+      }
+    }
+
+    function drawBgParticles(primaryRGB) {
+      bgCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      
+      // Draw grid coordinates/links
+      bgCtx.shadowBlur = 0;
+      for (let i = 0; i < bgParticles.length; i++) {
+        const p1 = bgParticles[i];
+        p1.x += p1.vx;
+        p1.y += p1.vy;
+        
+        // Bound checks
+        if (p1.x < 0) p1.x = window.innerWidth;
+        if (p1.x > window.innerWidth) p1.x = 0;
+        if (p1.y < 0) p1.y = window.innerHeight;
+        if (p1.y > window.innerHeight) p1.y = window.innerHeight;
+        
+        bgCtx.beginPath();
+        bgCtx.arc(p1.x, p1.y, p1.size, 0, Math.PI * 2);
+        bgCtx.fillStyle = `rgba(${primaryRGB[0]}, ${primaryRGB[1]}, ${primaryRGB[2]}, ${p1.alpha})`;
+        bgCtx.shadowColor = `rgb(${primaryRGB[0]}, ${primaryRGB[1]}, ${primaryRGB[2]})`;
+        bgCtx.shadowBlur = 5;
+        bgCtx.fill();
+        
+        // Node webs links
+        for (let j = i + 1; j < bgParticles.length; j++) {
+          const p2 = bgParticles[j];
+          const dist = Math.hypot(p1.x - p2.x, p1.y - p2.y);
+          if (dist < 110) {
+            const alpha = (1 - dist / 110) * 0.07;
+            bgCtx.beginPath();
+            bgCtx.moveTo(p1.x, p1.y);
+            bgCtx.lineTo(p2.x, p2.y);
+            bgCtx.strokeStyle = `rgba(${primaryRGB[0]}, ${primaryRGB[1]}, ${primaryRGB[2]}, ${alpha})`;
+            bgCtx.lineWidth = 0.55;
+            bgCtx.shadowBlur = 0;
+            bgCtx.stroke();
+          }
+        }
+      }
+    }
+
+    // --- Canvas Drawing: Central Reactor centerpiece ---
+    const coreCanvas = document.getElementById('core-canvas');
+    const coreCtx = coreCanvas.getContext('2d');
+    let outerRot = 0;
+    let innerRot = 0;
+
+    function drawArcReactor(primaryRGB, secondaryRGB) {
+      const cx = 160;
+      const cy = 160;
+      coreCtx.clearRect(0, 0, 320, 320);
+      
+      const time = Date.now();
+      let level = window._audioLevel;
+      
+      // Auto-simulation fallback if user hasn't interacted with manual level controls recently
+      if (time - lastManualLevelTime > 2500) {
+        if (window._coreState === 'listening') {
+          level = 0.15 + Math.sin(time * 0.04) * 0.08 + Math.random() * 0.15;
+        } else if (window._coreState === 'speaking') {
+          level = 0.25 + Math.sin(time * 0.015) * 0.2 + Math.cos(time * 0.008) * 0.1;
+          if (level < 0) level = 0;
+        } else if (window._coreState === 'working') {
+          level = 0.22 + Math.sin(time * 0.07) * 0.04;
+        } else {
+          level = 0.04 + Math.sin(time * 0.002) * 0.03;
+        }
+        window._audioLevel = level;
+        
+        // Sync UI inputs
+        const slider = document.getElementById('level-slider');
+        if (slider) slider.value = level;
+        const valText = document.getElementById('level-val');
+        if (valText) valText.innerText = level.toFixed(2);
+        const diagVal = document.getElementById('diag-audio-level');
+        if (diagVal) diagVal.innerText = level.toFixed(4);
+      }
+      
+      // Dynamic rotations speeds
+      let rotIncrement = 0.0025;
+      if (window._coreState === 'working') rotIncrement = 0.018;
+      else if (window._coreState === 'speaking') rotIncrement = 0.006;
+      else if (window._coreState === 'listening') rotIncrement = 0.0012;
+      
+      outerRot += rotIncrement;
+      innerRot -= rotIncrement * 1.4;
+      
+      const rPrimary = `rgb(${primaryRGB[0]}, ${primaryRGB[1]}, ${primaryRGB[2]})`;
+      const raPrimary = (a) => `rgba(${primaryRGB[0]}, ${primaryRGB[1]}, ${primaryRGB[2]}, ${a})`;
+      const rSecondary = `rgb(${secondaryRGB[0]}, ${secondaryRGB[1]}, ${secondaryRGB[2]})`;
+      const raSecondary = (a) => `rgba(${secondaryRGB[0]}, ${secondaryRGB[1]}, ${secondaryRGB[2]}, ${a})`;
+      
+      // 1. Outermost thin circle
+      coreCtx.beginPath();
+      coreCtx.arc(cx, cy, 138, 0, Math.PI * 2);
+      coreCtx.strokeStyle = raPrimary(0.12);
+      coreCtx.lineWidth = 1;
+      coreCtx.shadowBlur = 0;
+      coreCtx.stroke();
+      
+      // 2. Spinning outer ticks ring
+      coreCtx.save();
+      coreCtx.translate(cx, cy);
+      coreCtx.rotate(outerRot);
+      for (let i = 0; i < 90; i++) {
+        const angle = (i * Math.PI * 2) / 90;
+        if (i % 15 < 2) continue; // structural gaps
+        const isMajor = (i % 5 === 0);
+        const len = isMajor ? 9 : 5;
+        const innerR = 122;
+        
+        coreCtx.beginPath();
+        coreCtx.moveTo(Math.cos(angle) * innerR, Math.sin(angle) * innerR);
+        coreCtx.lineTo(Math.cos(angle) * (innerR + len), Math.sin(angle) * (innerR + len));
+        coreCtx.strokeStyle = isMajor ? raPrimary(0.65) : raPrimary(0.22);
+        coreCtx.lineWidth = isMajor ? 1.5 : 1;
+        coreCtx.stroke();
+      }
+      coreCtx.restore();
+      
+      // 3. Counter rotating dashed indicators
+      coreCtx.save();
+      coreCtx.translate(cx, cy);
+      coreCtx.rotate(innerRot);
+      
+      // Secondary Accent (Gold) dashed circle
+      coreCtx.beginPath();
+      coreCtx.arc(0, 0, 110, 0, Math.PI * 2);
+      coreCtx.strokeStyle = raSecondary(0.5);
+      coreCtx.lineWidth = 2.5;
+      coreCtx.setLineDash([4, 15, 22, 15]);
+      coreCtx.shadowColor = rSecondary;
+      coreCtx.shadowBlur = 6;
+      coreCtx.stroke();
+      
+      // Primary Accent (Cyan) segmented circle
+      coreCtx.beginPath();
+      coreCtx.arc(0, 0, 100, 0, Math.PI * 2);
+      coreCtx.strokeStyle = raPrimary(0.55);
+      coreCtx.lineWidth = 1.5;
+      coreCtx.setLineDash([45, 12, 85, 12]);
+      coreCtx.shadowColor = rPrimary;
+      coreCtx.shadowBlur = 8;
+      coreCtx.stroke();
+      
+      coreCtx.restore();
+      
+      // 4. Stark Coils (MK Reactor Emitters)
+      coreCtx.save();
+      coreCtx.translate(cx, cy);
+      coreCtx.rotate(outerRot * 0.45);
+      
+      const numCoils = 10;
+      const coilRadius = 78;
+      const currentActiveCoil = Math.floor((time / 90) % numCoils);
+      
+      for (let i = 0; i < numCoils; i++) {
+        const angle = (i * Math.PI * 2) / numCoils;
+        coreCtx.save();
+        coreCtx.rotate(angle);
+        
+        let coilIntensity = level;
+        if (window._coreState === 'working') {
+          const delta = (i - currentActiveCoil + numCoils) % numCoils;
+          coilIntensity = Math.max(0.15, 1 - delta * 0.2);
+        } else {
+          coilIntensity = 0.2 + level * 0.8;
+        }
+        
+        coreCtx.fillStyle = raSecondary(0.1 + coilIntensity * 0.45);
+        coreCtx.strokeStyle = raSecondary(0.35 + coilIntensity * 0.65);
+        coreCtx.lineWidth = 1.5;
+        coreCtx.shadowBlur = coilIntensity * 12;
+        coreCtx.shadowColor = rSecondary;
+        
+        // Drawing outer wrap box
+        coreCtx.beginPath();
+        coreCtx.rect(-9, -coilRadius - 8, 18, 14);
+        coreCtx.fill();
+        coreCtx.stroke();
+        
+        // Drawing copper wire ticks
+        coreCtx.strokeStyle = raSecondary(0.2 + coilIntensity * 0.4);
+        coreCtx.lineWidth = 1.2;
+        coreCtx.beginPath();
+        for (let dy = -6; dy <= 4; dy += 3) {
+          coreCtx.moveTo(-8, -coilRadius + dy);
+          coreCtx.lineTo(8, -coilRadius + dy);
+        }
+        coreCtx.stroke();
+        
+        coreCtx.restore();
+      }
+      coreCtx.restore();
+      
+      // 5. Soundwave ripples
+      coreCtx.save();
+      coreCtx.translate(cx, cy);
+      if (window._coreState === 'speaking' || window._coreState === 'listening') {
+        coreCtx.shadowBlur = 8;
+        coreCtx.shadowColor = rPrimary;
+        coreCtx.strokeStyle = raPrimary(0.65);
+        coreCtx.lineWidth = 1.5;
+        
+        for (let ringIdx = 0; ringIdx < 3; ringIdx++) {
+          const rBase = 42 + ringIdx * 10;
+          coreCtx.beginPath();
+          const resolution = 70;
+          for (let s = 0; s <= resolution; s++) {
+            const angle = (s * Math.PI * 2) / resolution;
+            const displacement = Math.sin(angle * (ringIdx + 4.5) + time * 0.015) * (level * 11);
+            const finalR = rBase + displacement;
+            const x = Math.cos(angle) * finalR;
+            const y = Math.sin(angle) * finalR;
+            if (s === 0) coreCtx.moveTo(x, y);
+            else coreCtx.lineTo(x, y);
+          }
+          coreCtx.closePath();
+          coreCtx.stroke();
+        }
+      } else {
+        coreCtx.beginPath();
+        coreCtx.arc(0, 0, 48, 0, Math.PI * 2);
+        coreCtx.strokeStyle = raPrimary(0.35);
+        coreCtx.lineWidth = 2;
+        coreCtx.stroke();
+      }
+      coreCtx.restore();
+      
+      // 6. Center glowing power reactor core
+      const coreSize = 24 + level * 14;
+      const gradient = coreCtx.createRadialGradient(cx, cy, 2, cx, cy, coreSize);
+      gradient.addColorStop(0, '#ffffff');
+      gradient.addColorStop(0.2, '#e0f7fa');
+      gradient.addColorStop(0.6, raPrimary(0.85));
+      gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      
+      coreCtx.fillStyle = gradient;
+      coreCtx.shadowBlur = 25 + level * 20;
+      coreCtx.shadowColor = rPrimary;
+      coreCtx.beginPath();
+      coreCtx.arc(cx, cy, coreSize, 0, Math.PI * 2);
+      coreCtx.fill();
+      
+      // Crosshair center markers
+      coreCtx.shadowBlur = 0;
+      coreCtx.strokeStyle = 'rgba(255, 255, 255, 0.75)';
+      coreCtx.lineWidth = 1;
+      coreCtx.beginPath();
+      coreCtx.moveTo(cx - 5, cy); coreCtx.lineTo(cx - 2, cy);
+      coreCtx.moveTo(cx + 2, cy); coreCtx.lineTo(cx + 5, cy);
+      coreCtx.moveTo(cx, cy - 5); coreCtx.lineTo(cx, cy - 2);
+      coreCtx.moveTo(cx, cy + 2); coreCtx.lineTo(cx, cy + 5);
+      coreCtx.stroke();
+    }
+
+    // --- Canvas Drawing: Audio Oscilloscope ---
+    const oscCanvas = document.getElementById('osc-canvas');
+    const oscCtx = oscCanvas.getContext('2d');
+    const oscHistory = Array(60).fill(0);
+
+    function drawOscilloscope(primaryRGB) {
+      oscCtx.clearRect(0, 0, 280, 55);
+      
+      // Shift values and push current audio level
+      oscHistory.shift();
+      oscHistory.push(window._audioLevel);
+      
+      const rPrimary = `rgb(${primaryRGB[0]}, ${primaryRGB[1]}, ${primaryRGB[2]})`;
+      
+      // Center reference baseline
+      oscCtx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+      oscCtx.lineWidth = 1;
+      oscCtx.beginPath();
+      oscCtx.moveTo(0, 27.5);
+      oscCtx.lineTo(280, 27.5);
+      oscCtx.stroke();
+      
+      // Active waveform path
+      oscCtx.strokeStyle = rPrimary;
+      oscCtx.lineWidth = 2;
+      oscCtx.shadowBlur = 8;
+      oscCtx.shadowColor = rPrimary;
+      oscCtx.beginPath();
+      
+      const step = 280 / (oscHistory.length - 1);
+      for (let i = 0; i < oscHistory.length; i++) {
+        const x = i * step;
+        // Fluctuating waveform height mapped to audio levels
+        const amplitude = oscHistory[i] * 22;
+        const timeFactor = Date.now() * 0.06;
+        const y = 27.5 + Math.sin(i * 0.28 - timeFactor) * amplitude;
+        
+        if (i === 0) oscCtx.moveTo(x, y);
+        else oscCtx.lineTo(x, y);
+      }
+      
+      oscCtx.stroke();
+      oscCtx.shadowBlur = 0; // reset glow
+    }
+
+    // --- High DPI scale alignment ---
+    function setupCanvasScaling() {
+      const dpr = window.devicePixelRatio || 1;
+      
+      // 1. BG Canvas
+      bgCanvas.width = window.innerWidth * dpr;
+      bgCanvas.height = window.innerHeight * dpr;
+      bgCanvas.style.width = window.innerWidth + 'px';
+      bgCanvas.style.height = window.innerHeight + 'px';
+      bgCtx.scale(dpr, dpr);
+      
+      // 2. Reactor Canvas
+      const coreRect = coreCanvas.getBoundingClientRect();
+      coreCanvas.width = coreRect.width * dpr;
+      coreCanvas.height = coreRect.height * dpr;
+      coreCtx.scale(dpr, dpr);
+      
+      // 3. Oscilloscope Canvas
+      const oscRect = oscCanvas.getBoundingClientRect();
+      oscCanvas.width = oscRect.width * dpr;
+      oscCanvas.height = oscRect.height * dpr;
+      oscCtx.scale(dpr, dpr);
+    }
+
+    window.addEventListener('resize', () => {
+      setupCanvasScaling();
+      initBgParticles();
+    });
+
+    // --- Main Loop tick ---
+    function tick() {
+      const colors = window.jarvisColors();
+      
+      // Draw background system
+      drawBgParticles(colors[0]);
+      
+      // Center Arc Reactor center
+      drawArcReactor(colors[0], colors[1]);
+      
+      // Oscilloscope diagnostics
+      drawOscilloscope(colors[0]);
+      
+      // Update HUD Gauges states
+      updateHueSyncGauge();
+      updateLoadIndex();
+      
+      // Parallax updates
+      handleParallax();
+      
+      requestAnimationFrame(tick);
+    }
+
+    // --- Data Polling Loop ---
+    function initDataSync() {
+      // Start window.WarRoomData.poll
+      window.WarRoomData.poll((data) => {
+        tasksCache = data.tasks;
+        commitsCache = data.commits;
+        
+        // Render panels
+        renderTasks(tasksCache);
+        renderCommits(commitsCache);
+        renderHuePalette();
+        
+        // Soft audio alert for incoming telemetry updates
+        playBeep(1320, 0.05, 'sine', 0.01);
+      }, 20000);
+    }
+
+    // --- Initializer ---
+    window.addEventListener('DOMContentLoaded', () => {
+      // Scale canvases
+      setupCanvasScaling();
+      
+      // Populate background particles
+      initBgParticles();
+      
+      // Run Clock immediately, set interval
+      updateClock();
+      setInterval(updateClock, 35);
+      
+      // Init Hue Swatch Palette
+      renderHuePalette();
+      
+      // Start data wire
+      initDataSync();
+      
+      // Kick off 60fps render loops
+      requestAnimationFrame(tick);
+      
+      // Enable sound context on first interactive click
+      document.body.addEventListener('click', () => {
+        initAudio();
+      }, { once: true });
+    });
+  </script>
+</body>
+</html>
