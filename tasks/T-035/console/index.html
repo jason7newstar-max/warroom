@@ -1128,6 +1128,10 @@
           
           <div class="diagnostics-grid">
             <div class="diag-item">
+              <span class="diag-label">BRIDGE LINK:</span>
+              <span class="diag-value" id="diag-bridge-link" style="color:#64748b">SEARCHING…</span>
+            </div>
+            <div class="diag-item">
               <span class="diag-label">AUDIO LEVEL:</span>
               <span class="diag-value" id="diag-audio-level">0.00</span>
             </div>
@@ -1572,12 +1576,55 @@
       const ring = document.getElementById('gauge-sync');
       const text = document.getElementById('gauge-sync-text');
       if (ring && text) {
-        const time = Date.now();
-        // Pulsate sync rate indicator
-        const syncLevel = 82 + Math.sin(time * 0.004) * 12;
-        const offset = 251.2 - (syncLevel / 100) * 251.2;
-        ring.style.strokeDashoffset = offset;
-        text.style.opacity = 0.7 + Math.sin(time * 0.007) * 0.3;
+        if (bridgeLinked) {
+          const time = Date.now();
+          const syncLevel = 82 + Math.sin(time * 0.004) * 12;
+          ring.style.strokeDashoffset = 251.2 - (syncLevel / 100) * 251.2;
+          ring.style.opacity = 1;
+          text.innerHTML = 'ON';
+          text.style.opacity = 0.7 + Math.sin(time * 0.007) * 0.3;
+        } else {
+          ring.style.strokeDashoffset = 251.2 - 0.06 * 251.2;
+          ring.style.opacity = 0.35;
+          text.innerHTML = 'OFF';
+          text.style.opacity = 0.4;
+        }
+      }
+    }
+
+    // --- Hue bridge push loop (the actual closed loop) ---
+    // POSTs the live palette + core level to the local bridge service
+    // (tasks/T-035/hue/hue_bridge.py run), which drives the physical lights.
+    const BRIDGE_URL = 'http://127.0.0.1:7878';
+    let bridgeLinked = false;
+    let bridgeFails = 0;
+
+    async function pushToBridge() {
+      try {
+        const res = await fetch(BRIDGE_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            colors: window.jarvisColors(),
+            level: Number(window.jarvisAudioLevel().toFixed(3))
+          }),
+          signal: AbortSignal.timeout ? AbortSignal.timeout(1500) : undefined
+        });
+        if (!res.ok) throw new Error('bridge ' + res.status);
+        bridgeFails = 0;
+        if (!bridgeLinked) {
+          bridgeLinked = true;
+          playBeep(1320, 0.1, 'sine', 0.02);
+        }
+      } catch (e) {
+        bridgeFails++;
+        if (bridgeFails >= 3) bridgeLinked = false;
+      }
+      const linkEl = document.getElementById('diag-bridge-link');
+      if (linkEl) {
+        linkEl.innerText = bridgeLinked ? 'ONLINE :7878' : 'OFFLINE';
+        linkEl.style.color = bridgeLinked ? '#10b981' : '#64748b';
+        linkEl.style.textShadow = bridgeLinked ? '0 0 6px rgba(16,185,129,0.5)' : 'none';
       }
     }
 
@@ -2049,6 +2096,10 @@
       
       // Start data wire
       initDataSync();
+
+      // Start Hue bridge closed loop
+      pushToBridge();
+      setInterval(pushToBridge, 450);
       
       // Kick off 60fps render loops
       requestAnimationFrame(tick);

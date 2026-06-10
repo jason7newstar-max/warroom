@@ -17,12 +17,16 @@ The JARVIS page then POSTs `{ "colors": [[r,g,b],...], "level": 0..1 }` to
 `window.jarvisColors()`, level from `window.jarvisAudioLevel()`.
 
 ## Status (2026-06-10)
-- ✅ discover / pair / areas = real (discover already found a bridge at **192.168.50.82**).
-- ⏳ DTLS 25Hz streaming loop = scaffolded; to finish + test it needs:
-  1. press-link pairing done (gets the clientkey),
-  2. an Entertainment area created in the Hue app,
-  3. a DTLS lib installed (`pip install python-mbedtls`), then fill the handshake +
-     stream loop marked TODO in `hue_bridge.py:run()`.
-- Two reactive modes to build on top: **screen-color follow** + **audio beat/volume** (FFT).
+- ✅ discover / pair = done (bridge **192.168.50.82**, appkey + clientkey stored).
+- ✅ **CLOSED LOOP LIVE (REST mode)**: `python3 hue_bridge.py run` now auto-detects
+  reachable color lights (5 Long, 6/7 floor, 9 lightstrip), serves the feed on
+  `http://127.0.0.1:7878`, and drives the lights at ~2.5Hz with soft transitions —
+  colors distributed round-robin across lights, `level` breathes the brightness.
+  The JARVIS console (`tasks/T-035/console/`) POSTs `{colors, level}` every 450ms
+  and shows BRIDGE LINK: ONLINE + a real HUE_SYNC gauge. Verified end-to-end
+  2026-06-10: page → bridge → physical lights took cyan/gold/purple.
+- ⏳ Entertainment DTLS 25Hz mode = future upgrade (needs an Entertainment area in
+  the Hue app + `pip install python-mbedtls`; notes in `hue_bridge.py:run()`).
+- `screen_follow.py` = bonus mode: screen-capture dominant color → lights (REST v1).
 
 State is stored at `~/.phantom/hue.json`.

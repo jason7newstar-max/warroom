@@ -22,7 +22,7 @@ Status: setup/pairing/area-list are REAL (just need the hardware on the LAN).
 The DTLS streaming loop is scaffolded — it needs a DTLS lib (see TODO) + the
 Bridge present to finish + test. Nothing here is faked.
 """
-import json, sys, time, struct, argparse, urllib.request, ssl
+import json, sys, time, struct, argparse, urllib.request, ssl, threading, colorsys
 from pathlib import Path
 
 CFG = Path.home() / ".phantom" / "hue.json"        # stores {ip, appkey, clientkey, area}
@@ -98,40 +98,99 @@ def _entertainment_msg(channels):
         msg += struct.pack(">BHHH", cid, r, g, b)
     return msg
 
-def run(area):
-    cfg = load_cfg(); ip, key, ckey = cfg.get("ip"), cfg.get("appkey"), cfg.get("clientkey")
-    if not (ip and key and ckey and area):
-        print("need ip + appkey + clientkey + --area (run discover/pair/areas first)."); return
-    # activate streaming on the chosen entertainment configuration
-    # PUT /clip/v2/resource/entertainment_configuration/<area> {"action":"start"}
-    print(f"[hue] would activate area {area} on {ip} and open DTLS:2100 …")
-    print("[hue] color/level feed served on http://127.0.0.1:7878  (POST {colors:[[r,g,b]],level:0..1})")
-    # ---- TODO (needs hardware + a DTLS lib) ----
-    # DTLS PSK handshake: identity = appkey, psk = bytes.fromhex(clientkey), to udp ip:2100.
-    #   lib options: `python-mbedtls` (pip install python-mbedtls) or `dtls`/`pyOpenSSL`.
-    # Then 25Hz loop:
-    #   colors,level = latest_from_http_feed()           # fed by the JARVIS page
-    #   chans = map colors+level -> [(cid, r16,g16,b16), ...]
-    #   dtls_sock.send(_entertainment_msg(chans))
-    #   sleep(1/25)
-    _serve_feed_stub()
+def _put(url, body, timeout=4):
+    ctx = ssl.create_default_context(); ctx.check_hostname=False; ctx.verify_mode=ssl.CERT_NONE
+    req = urllib.request.Request(url, data=json.dumps(body).encode(), method="PUT")
+    return json.load(urllib.request.urlopen(req, timeout=timeout, context=ctx))
 
-# A tiny HTTP endpoint the JARVIS page pushes colors/level to (kept process-local).
+def _reachable_color_lights(ip, key):
+    data = _get(f"https://{ip}/api/{key}/lights")
+    out = []
+    for lid, l in sorted(data.items(), key=lambda kv: int(kv[0])):
+        if l.get("state", {}).get("reachable") and "hue" in l.get("state", {}):
+            out.append(lid)
+    return out
+
+def run(area):
+    """Closed loop, CLIP v1 REST mode (no extra deps): serve the feed endpoint and
+    push the latest colors/level to every reachable color light at ~2.5Hz with soft
+    transitions. The Entertainment DTLS path (25Hz, --area) stays a future upgrade:
+      PSK handshake identity=appkey psk=bytes.fromhex(clientkey) to udp ip:2100
+      (lib: python-mbedtls), then send _entertainment_msg() frames at 25Hz."""
+    cfg = load_cfg(); ip, key = cfg.get("ip"), cfg.get("appkey")
+    if not (ip and key):
+        print("need ip + appkey (run discover/pair first)."); return
+    if area:
+        print(f"[hue] DTLS Entertainment mode for area {area} not built yet — using REST mode.")
+    lights = _reachable_color_lights(ip, key)
+    if not lights:
+        print("[hue] no reachable color lights found — check the Bridge/lights."); return
+    print(f"[hue] driving lights {lights} on {ip} (CLIP v1 REST @2.5Hz)")
+    threading.Thread(target=_rest_loop, args=(ip, key, lights), daemon=True).start()
+    _serve_feed()
+
+# Latest frame from the JARVIS page; the REST loop consumes it.
 _latest = {"colors": [[34,211,238]], "level": 0.0}
-def _serve_feed_stub():
+_latest_lock = threading.Lock()
+_stats = {"pushes": 0, "last_push": 0.0, "lights": []}
+
+def _rest_loop(ip, key, lights):
+    _stats["lights"] = lights
+    last_sent = {}
+    while True:
+        with _latest_lock:
+            colors = list(_latest.get("colors") or [[34,211,238]])
+            level = max(0.0, min(1.0, float(_latest.get("level") or 0)))
+        for i, lid in enumerate(lights):
+            r, g, b = colors[i % len(colors)]
+            h, s, v = colorsys.rgb_to_hsv(r/255, g/255, b/255)
+            hue = int(h * 65535)
+            sat = int(min(254, s * 254 + 30))
+            # level breathes the brightness on top of the color's own value
+            bri = int(min(254, max(25, (0.35 + 0.65 * level) * max(v, 0.35) * 254)))
+            state = (hue, sat, bri)
+            prev = last_sent.get(lid)
+            # skip a push when nothing moved enough — keeps Zigbee traffic sane
+            if prev and abs(prev[0]-hue) < 400 and abs(prev[1]-sat) < 6 and abs(prev[2]-bri) < 6:
+                continue
+            try:
+                _put(f"https://{ip}/api/{key}/lights/{lid}/state",
+                     {"on": True, "hue": hue, "sat": sat, "bri": bri, "transitiontime": 3})
+                last_sent[lid] = state
+                _stats["pushes"] += 1; _stats["last_push"] = time.time()
+            except Exception:
+                pass
+        time.sleep(0.4)
+
+def _serve_feed():
     from http.server import BaseHTTPRequestHandler, HTTPServer
     class H(BaseHTTPRequestHandler):
         def log_message(self, *a): pass
+        def _cors(self):
+            self.send_header("Access-Control-Allow-Origin", "*")
         def do_POST(self):
             n = int(self.headers.get("Content-Length", 0))
-            try: _latest.update(json.loads(self.rfile.read(n) or b"{}"))
+            try:
+                body = json.loads(self.rfile.read(n) or b"{}")
+                with _latest_lock:
+                    if "colors" in body: _latest["colors"] = body["colors"]
+                    if "level" in body: _latest["level"] = body["level"]
             except Exception: pass
-            self.send_response(200); self.send_header("Access-Control-Allow-Origin","*"); self.end_headers()
+            self.send_response(200); self._cors(); self.end_headers()
             self.wfile.write(b'{"ok":true}')
+        def do_GET(self):
+            self.send_response(200); self._cors()
+            self.send_header("Content-Type", "application/json"); self.end_headers()
+            self.wfile.write(json.dumps({"ok": True, "mode": "rest",
+                "lights": _stats["lights"], "pushes": _stats["pushes"],
+                "last_push": _stats["last_push"]}).encode())
         def do_OPTIONS(self):
-            self.send_response(204); self.send_header("Access-Control-Allow-Origin","*")
-            self.send_header("Access-Control-Allow-Headers","Content-Type"); self.end_headers()
-    print("[hue] feed endpoint up on :7878 (DTLS streaming stubbed until Bridge present)")
+            self.send_response(204); self._cors()
+            self.send_header("Access-Control-Allow-Headers", "Content-Type")
+            # Chrome Private Network Access preflight (HTTPS page -> 127.0.0.1)
+            self.send_header("Access-Control-Allow-Private-Network", "true")
+            self.end_headers()
+    print("[hue] feed endpoint up on http://127.0.0.1:7878  (POST {colors:[[r,g,b],...],level:0..1})")
     HTTPServer(("127.0.0.1", 7878), H).serve_forever()
 
 if __name__ == "__main__":
