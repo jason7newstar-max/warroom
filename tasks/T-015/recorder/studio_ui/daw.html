@@ -110,8 +110,13 @@
       <option value="2">2s</option><option value="3" selected>3s</option>
       <option value="4">4s</option><option value="5">5s</option>
     </select>
-    <button class="t" id="mon" title="Live monitor with effects">🎧 Monitor</button>
+    <button class="t" id="mon" title="开/关耳机监听(耳机里有效果,录下来的永远是干声)">🎧 Monitor</button>
+    <span class="meterlabel" title="只改变歌手耳机里听到的声音">耳返</span>
+    <button class="t monsty on" data-style="silk" title="温柔压缩+丝滑高频+贴耳板式混响——最舒服">🪶 丝滑</button>
+    <button class="t monsty" data-style="stage" title="CLA式压缩+明亮+大空间混响——舞台感">🎤 现场</button>
+    <button class="t monsty" data-style="dry" title="几乎干声+一点点房间——校音准用">🔍 干声</button>
   </div>
+  <style>.monsty{opacity:.55}.monsty.on{opacity:1;border-color:var(--gold);color:var(--gold)}</style>
 
   <div class="takes">
     <h2>Takes <button class="t" id="savecomp" style="margin-left:8px;font-size:12px;padding:6px 11px" disabled>⬇ Save comp</button></h2>
@@ -432,6 +437,17 @@ $('#mon').onclick=async()=>{ monitoring=!monitoring;
     body:JSON.stringify({on:monitoring})})).json();
   monitoring=r.monitor; $('#mon').style.borderColor=monitoring?'var(--green)':'';
   $('#mon').textContent=!r.monitor_ok?'🎧 n/a':(monitoring?'🎧 Monitor ON':'🎧 Monitor'); };
+
+// 耳返风格 chips — switching a style auto-enables the monitor (录的永远是干声)
+document.querySelectorAll('.monsty').forEach(b=>b.onclick=async()=>{
+  try{
+    await fetch('/api/monstyle',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({style:b.dataset.style})});
+    document.querySelectorAll('.monsty').forEach(x=>x.classList.toggle('on',x===b));
+    if(!monitoring){ $('#mon').click(); }   // picking a style implies you want to hear it
+    toast('耳返已切换:'+b.textContent.trim());
+  }catch(e){ toast('切换失败:'+e.message); }
+});
 setInterval(async()=>{ try{const m=await (await fetch('/api/meter')).json();
   dev.textContent='IN · '+m.device; fill.style.width=Math.max(0,Math.min(100,(m.peak_db+60)/60*100))+'%';
 }catch(e){} },150);
