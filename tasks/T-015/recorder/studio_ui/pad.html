@@ -1,0 +1,169 @@
+<!doctype html><html lang="zh"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>PinLA Studio · Pad</title>
+<style>
+  :root{--gold:#d8b46d;--ink:#f3f6fb;--bg:#0b0e14;--panel:rgba(255,255,255,.05);--line:rgba(255,255,255,.12)}
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;font-family:-apple-system,"PingFang SC",sans-serif}
+  html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink)}
+  body{display:flex;flex-direction:column;background:radial-gradient(120% 80% at 50% -10%,#141a26,#070a10 70%)}
+  header{display:flex;align-items:center;justify-content:space-between;padding:18px 26px}
+  .brand{font-weight:800;letter-spacing:2px}.brand b{color:var(--gold)}
+  .brand .sub{display:block;font-size:11px;letter-spacing:3px;color:rgba(243,246,251,.5);margin-top:3px}
+  #clock{font:800 22px/1 ui-monospace,monospace;color:var(--gold)}
+
+  /* ===== picker screen ===== */
+  #pick{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px}
+  #pick h1{font-size:30px;font-weight:800;text-align:center}
+  #pick h1 span{color:var(--gold)}
+  .carousel{display:flex;gap:0;width:100%;overflow-x:auto;scroll-snap-type:x mandatory;padding:10px 38vw;scrollbar-width:none}
+  .carousel::-webkit-scrollbar{display:none}
+  .host{flex:0 0 44vw;max-width:340px;scroll-snap-align:center;transition:.3s;opacity:.45;transform:scale(.84)}
+  .host.on{opacity:1;transform:scale(1)}
+  .host .ph{width:100%;aspect-ratio:3/4;border-radius:26px;overflow:hidden;border:2px solid var(--line);position:relative;background:#11151e}
+  .host.on .ph{border-color:var(--c);box-shadow:0 0 50px -8px var(--c)}
+  .host .ph img{width:100%;height:100%;object-fit:cover}
+  .host .nm{text-align:center;margin-top:14px;font-size:24px;font-weight:800}
+  .host .tg{text-align:center;color:rgba(243,246,251,.6);font-size:14px;margin-top:3px}
+  .choose{margin-top:6px;padding:16px 56px;border-radius:40px;border:none;background:var(--gold);color:#1a1407;
+    font-size:19px;font-weight:800;letter-spacing:1px;box-shadow:0 10px 30px -8px rgba(216,180,109,.6)}
+  .hint{color:rgba(243,246,251,.45);font-size:14px}
+
+  /* ===== console screen ===== */
+  #console{flex:1;display:none;flex-direction:column;padding:0 26px 26px}
+  .hostbar{display:flex;align-items:center;gap:14px;padding:10px 0 16px}
+  .hostbar img{width:54px;height:54px;border-radius:50%;object-fit:cover;border:2px solid var(--gold)}
+  .hostbar .who{font-weight:800;font-size:18px}.hostbar .st{font-size:13px;color:rgba(243,246,251,.55)}
+  .hostbar .sw{margin-left:auto;padding:9px 16px;border:1px solid var(--line);border-radius:20px;font-size:13px;color:var(--ink);background:transparent}
+  .sub{min-height:26px;text-align:center;color:#dff1ff;font-size:15px;margin-bottom:8px}
+  .lyric{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:6px 0;-webkit-overflow-scrolling:touch}
+  .ln{padding:16px 18px;border-radius:16px;background:var(--panel);border:1px solid var(--line);font-size:18px;display:flex;align-items:center;gap:12px}
+  .ln .dot{width:11px;height:11px;border-radius:50%;background:#555;flex:0 0 auto}
+  .ln.sel{border-color:var(--gold);background:rgba(216,180,109,.14)}
+  .ln .i{font-weight:800;color:var(--gold);min-width:42px}
+  .meterwrap{height:8px;border-radius:5px;background:#000;overflow:hidden;border:1px solid var(--line);margin:10px 0}
+  .meterwrap .f{height:100%;width:0;background:linear-gradient(90deg,#5ad17a,#e8c45a 80%,#f2685f)}
+  .pad{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:6px}
+  .pad button{padding:18px 0;border-radius:18px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font-size:15px;font-weight:700}
+  .rec{grid-column:span 2;background:linear-gradient(160deg,#f2685f,#b53a32)!important;border:none!important;color:#fff!important;font-size:20px!important}
+  .rec.on{background:linear-gradient(160deg,#5ad17a,#2f8f4a)!important}
+  .tts-note{position:fixed;left:0;right:0;bottom:0;height:0}
+  audio{display:none}
+</style></head>
+<body>
+<header>
+  <div class="brand">PinLA <b>STUDIO</b><span class="sub">无人值守 AI 录音棚 · Powered by ONE TEN LAB</span></div>
+  <div id="clock">00:00.0</div>
+</header>
+
+<!-- ===== 选 AI 助手 ===== -->
+<section id="pick">
+  <h1>选一位 <span>AI 录音助手</span> 陪你录</h1>
+  <div class="carousel" id="carousel"></div>
+  <button class="choose" id="choose">就选 TA →</button>
+  <div class="hint">← 左右滑动选择 · 点 TA 试听声音 →</div>
+</section>
+
+<!-- ===== 录音控制台 ===== -->
+<section id="console">
+  <div class="hostbar">
+    <img id="hImg" src="">
+    <div><div class="who" id="hWho"></div><div class="st" id="hSt">待命</div></div>
+    <button class="sw" id="hSwitch">换助手</button>
+  </div>
+  <div class="sub" id="sub">点 ●录音 开始,或滑到歌词点哪句重唱哪句</div>
+  <div class="lyric" id="lyric"><div style="color:rgba(243,246,251,.4);text-align:center;padding:30px">先在大屏导入伴奏,这里会显示歌词分句</div></div>
+  <div class="meterwrap"><div class="f" id="meter"></div></div>
+  <div class="pad">
+    <button class="rec" id="bRec">● 录音</button>
+    <button id="bPlay">▶ 试听</button>
+    <button id="bPitch">🎯 音准</button>
+    <button id="bSilk">🪶 丝滑</button>
+    <button id="bStage">🎤 现场</button>
+    <button id="bFinish">✓ 出歌</button>
+    <button id="bImport">＋ 伴奏</button>
+  </div>
+</section>
+<audio id="ttsA"></audio>
+
+<script>
+const API='';  // same origin
+const $=s=>document.querySelector(s);
+let hosts=[], idx=0, host=null;
+
+// clock
+setInterval(()=>{},1000);
+
+async function loadHosts(){
+  try{ const j=await (await fetch('/api/hosts')).json(); hosts=j.hosts; }catch(e){
+    hosts=[{id:'mini',name:'Mini',tag:'活泼·暖心',color:'#ff7eb6'},{id:'ia10',name:'IA10',tag:'冷静·专业',color:'#22d3ee'},
+           {id:'karen',name:'Karen',tag:'英气·干练',color:'#d8b46d'},{id:'wentian',name:'文天',tag:'温暖·沉稳',color:'#9bd1ff'}]; }
+  const c=$('#carousel');
+  c.innerHTML=hosts.map((h,i)=>`<div class="host" data-i="${i}" style="--c:${h.color}">
+    <div class="ph"><img src="/host/${h.id}.png" onerror="this.style.opacity=.2"></div>
+    <div class="nm">${h.name}</div><div class="tg">${h.tag}</div></div>`).join('');
+  c.querySelectorAll('.host').forEach(el=>{
+    el.onclick=()=>{ const i=+el.dataset.i; el.scrollIntoView({behavior:'smooth',inline:'center'}); preview(i); };
+  });
+  c.addEventListener('scroll',()=>{ // mark centered card as .on
+    const mid=c.scrollLeft+c.clientWidth/2;
+    let best=0,bd=1e9; c.querySelectorAll('.host').forEach((el,i)=>{
+      const cx=el.offsetLeft+el.offsetWidth/2-c.offsetLeft, d=Math.abs(cx-mid); if(d<bd){bd=d;best=i;} });
+    idx=best; c.querySelectorAll('.host').forEach((el,i)=>el.classList.toggle('on',i===best));
+  },{passive:true});
+  setTimeout(()=>{ c.querySelector('.host').scrollIntoView({inline:'center'}); c.querySelector('.host').classList.add('on'); },100);
+}
+async function preview(i){
+  const h=hosts[i]; if(!h||!h.hello)return;
+  try{ const a=$('#ttsA'); a.src='/api/tts?text='+encodeURIComponent(h.hello)+'&voice='+encodeURIComponent(h.voice||''); a.play().catch(()=>{}); }catch(e){}
+}
+function speak(text){ const h=host||{}; const a=$('#ttsA');
+  a.src='/api/tts?text='+encodeURIComponent(text)+'&voice='+encodeURIComponent(h.voice||''); a.play().catch(()=>{}); $('#sub').textContent=h.name+':'+text; }
+
+$('#choose').onclick=()=>{ host=hosts[idx]; enterConsole(); };
+function enterConsole(){
+  $('#pick').style.display='none'; $('#console').style.display='flex';
+  $('#hImg').src='/host/'+host.id+'.png'; $('#hWho').textContent=host.name;
+  document.documentElement.style.setProperty('--c',host.color||'#d8b46d');
+  speak(host.hello||'我们开始吧');
+}
+$('#hSwitch').onclick=()=>{ $('#console').style.display='none'; $('#pick').style.display='flex'; };
+
+// ---- console controls → same backend the booth screen uses ----
+let recOn=false;
+async function post(u,b){ try{ return await (await fetch(u,{method:'POST',headers:{'Content-Type':'application/json'},body:b?JSON.stringify(b):undefined})).json(); }catch(e){return{};} }
+$('#bRec').onclick=async()=>{
+  recOn=!recOn; $('#bRec').classList.toggle('on',recOn); $('#bRec').textContent=recOn?'■ 停止':'● 录音';
+  $('#hSt').textContent=recOn?'🔴 录音中':'待命';
+  if(recOn){ await post('/api/record'); speak('开始,跟着伴奏唱'); }
+  else{ const r=await post('/api/stop'); lastTake=r&&r.name; speak('好,这条录好了'); loadLyric(); }
+};
+$('#bPlay').onclick=()=>{ speak('放给你听'); /* booth screen handles playback; here just cue */ };
+$('#bPitch').onclick=async()=>{ if(!lastTake){speak('先录一条');return;} speak('我来听听音准');
+  try{ const seg=await (await fetch('/api/analyze/'+lastTake)).json();
+    const ph=(seg.segments||[]).map(s=>({i:s.i,start:s.start,end:s.end}));
+    const j=await post('/api/pitch/'+lastTake,{phrases:ph,mode:'hobby'});
+    grades={}; (j.phrases||[]).forEach(p=>grades[p.i]=p); lyricSegs=seg.segments||[]; renderLyric();
+    const pr=j.priority||[]; speak(pr.length?('第'+pr.join('、')+'句可以再来一遍'):'音准都不错,很稳');
+  }catch(e){ speak('分析出了点问题'); } };
+$('#bSilk').onclick=()=>{ post('/api/monstyle',{style:'silk'}); post('/api/monitor',{on:true}); speak('耳返换成丝滑'); };
+$('#bStage').onclick=()=>{ post('/api/monstyle',{style:'stage'}); post('/api/monitor',{on:true}); speak('耳返换成现场'); };
+$('#bFinish').onclick=()=>{ speak('好,出歌,文件马上给你'); };
+$('#bImport').onclick=()=>{ speak('请在大屏选伴奏文件'); };
+
+// lyric / phrase strip (tap a line to redo)
+let lastTake=null, lyricSegs=[], grades={};
+async function loadLyric(){ if(!lastTake)return; try{ const seg=await (await fetch('/api/analyze/'+lastTake)).json(); lyricSegs=seg.segments||[]; renderLyric(); }catch(e){} }
+function renderLyric(){
+  const L=$('#lyric'); if(!lyricSegs.length){ return; }
+  L.innerHTML=lyricSegs.map(s=>{ const g=grades[s.i]; const col=g?({green:'#5ad17a',yellow:'#e8c45a',red:'#f2685f'}[g.grade]||'#555'):'#555';
+    return `<div class="ln" data-i="${s.i}"><span class="dot" style="background:${col}"></span><span class="i">第${s.i}句</span><span>${s.text||''}</span></div>`; }).join('');
+  L.querySelectorAll('.ln').forEach(el=>el.onclick=()=>{ L.querySelectorAll('.ln').forEach(x=>x.classList.remove('sel')); el.classList.add('sel');
+    selPhrase=+el.dataset.i; speak('好,第'+selPhrase+'句重唱,准备'); });
+}
+let selPhrase=null;
+
+setInterval(async()=>{ try{ const m=await (await fetch('/api/meter')).json(); $('#meter').style.width=Math.max(0,Math.min(100,(m.peak_db+60)/60*100))+'%'; }catch(e){} },150);
+loadHosts();
+</script>
+</body></html>
