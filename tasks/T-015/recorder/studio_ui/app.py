@@ -95,7 +95,31 @@ def _cla_stage():
             dry_level=0.82, width=1.0),
     ])
 
-_mon_board = _cla_stage()
+def _silk_rnb():
+    """丝滑舒适 — gentle compression, silky top, intimate plate. Easy on the ears."""
+    return _PB([
+        _HP(cutoff_frequency_hz=80),
+        _Cp(threshold_db=-18, ratio=2.5, attack_ms=8, release_ms=120),  # gentle glue
+        _PK(cutoff_frequency_hz=300, gain_db=-1.5, q=1.0),              # light de-mud
+        _PK(cutoff_frequency_hz=3200, gain_db=1.5, q=1.0),              # soft presence
+        _HS(cutoff_frequency_hz=9000, gain_db=2.5),                     # silk air
+        _Gn(gain_db=2.0),
+        _Rv(room_size=0.45, damping=0.5, wet_level=0.16,                # intimate plate
+            dry_level=0.88, width=0.9),
+    ])
+
+def _dry_plus():
+    """轻干声 — clean and honest: hp + featherweight comp + tiny room. For pitch checking."""
+    return _PB([
+        _HP(cutoff_frequency_hz=85),
+        _Cp(threshold_db=-14, ratio=2.0, attack_ms=10, release_ms=150),
+        _Gn(gain_db=1.5),
+        _Rv(room_size=0.12, damping=0.6, wet_level=0.05, dry_level=0.95, width=0.7),
+    ])
+
+_MON_STYLES = {"stage": _cla_stage, "silk": _silk_rnb, "dry": _dry_plus}
+_mon_board = _silk_rnb()   # default = the comfortable one (歌手舒服优先)
+_mon_style = "silk"
 _live_board = None     # when set (non-native mode), live-monitor through REAL plugins
 _live_lock = threading.Lock()
 
@@ -279,6 +303,25 @@ def monitor():
         return jsonify(ok=True, monitor=on, monitor_ok=True)
     _monitor = on and MONITOR_OK
     return jsonify(ok=True, monitor=_monitor, monitor_ok=MONITOR_OK)
+
+
+@app.route("/api/monstyle", methods=["POST", "GET"])
+def monstyle():
+    """Switch the live headphone-comfort chain: silk(丝滑) / stage(现场) / dry(轻干声).
+    Recording stays DRY regardless — this only shapes what the singer HEARS."""
+    global _mon_board, _mon_style, _live_board
+    from flask import request
+    if request.method == "GET":
+        return jsonify(style=_mon_style, styles=list(_MON_STYLES.keys()))
+    style = (request.get_json(silent=True) or {}).get("style", "silk")
+    if style not in _MON_STYLES:
+        return jsonify(ok=False, error="unknown style")
+    with _live_lock:
+        _live_board = None          # built-in style overrides any loaded VST combo
+        time.sleep(0.06)
+        _mon_board = _MON_STYLES[style]()
+        _mon_style = style
+    return jsonify(ok=True, style=style)
 
 
 def native_preset_names():
