@@ -512,7 +512,12 @@ recomputeScale(); refreshTakes(); tick();
   function setState(s){ STATE_HF=s; stEl.textContent=({listen:'🟢 听指令',sing:'🔴 录唱中',idle:'待命',think:'⏳处理'})[s]||s;
     fetch('http://127.0.0.1:8092/state',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({state:s})}).catch(()=>{}); }
   let STATE_HF='idle';
-  function say(t){ subEl.textContent=t; if(!t)return; try{const u=new SpeechSynthesisUtterance(t);u.lang='zh-CN';u.rate=1.06;
+  // silky female assistant voice via server Edge-TTS (晓伊), browser fallback
+  let _ttsA=new Audio();
+  function say(t){ subEl.textContent=t; if(!t)return;
+    try{ _ttsA.pause(); _ttsA=new Audio('/api/tts?text='+encodeURIComponent(t)+'&voice=zh-CN-XiaoyiNeural');
+         _ttsA.play().catch(()=>browserSay(t)); }catch(e){ browserSay(t); } }
+  function browserSay(t){ try{const u=new SpeechSynthesisUtterance(t);u.lang='zh-CN';u.rate=1.05;
     const v=speechSynthesis.getVoices().find(v=>v.lang.startsWith('zh')); if(v)u.voice=v; speechSynthesis.speak(u);}catch(e){} }
 
   // continuous command listener (only active in LISTEN state)
