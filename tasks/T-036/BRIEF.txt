@@ -1,0 +1,26 @@
+QUANT STRATEGY BATTLE (T-036) — analyze the market YOURSELF, then design ONE options strategy to win the week.
+
+THIS IS OPEN-ENDED. Do NOT assume a direction — YOU decide. This is a competition: 5 agents each submit one strategy; all run ~1 week on paper with real market data; the BEST RISK-ADJUSTED performer (with a sound thesis) gets funded with $1000 real money. Winner is judged on risk-adjusted return AND quality of reasoning — not a lucky one-week direction bet. Make yours win.
+
+STEP 1 — DO YOUR OWN MARKET ANALYSIS (and show it):
+- Look at the last ~3 months AND last ~12 months of US equity price action (SPY/QQQ/IWM trend, recent momentum, volatility regime).
+- Factor in current macro / news / positioning you know of (rates, earnings season, sentiment, seasonality).
+- State YOUR directional call for the coming 1-2 weeks: bullish / bearish / sideways / high-vol / low-vol — and WHY. You own this call; it's part of what's judged.
+
+STEP 2 — DESIGN A STRATEGY THAT EXPRESSES YOUR CALL, within these hard constraints:
+- US-listed OPTIONS on liquid underlyings only: SPY, QQQ, IWM (0DTE daily options available). 0DTE to 7DTE.
+- DEFINED RISK only (no naked short options) — must work in a CASH account (broker holds max-loss as collateral, no margin loan): verticals, iron condors, iron/broken-wing butterflies, credit spreads, debit spreads, calendars, ratio spreads that are net-defined.
+- Capital $200-1000 paper; sizing realistic (collateral = max loss).
+- NO crypto, NO futures, NO single-name earnings gambles, NO undefined risk.
+
+SUBMIT — a precise, implementable spec with these fields:
+1. STRATEGY_NAME
+2. MARKET_ANALYSIS: your 3mo + 12mo read + macro/news, ending in your directional call (2-5 sentences, specific)
+3. UNDERLYING(S): which of SPY/QQQ/IWM and why
+4. STRUCTURE: exact legs (deltas/strikes/DTE/wing width) — be numeric
+5. ENTRY_RULES: time window + any signal/filter (e.g. IV rank, EMA cross, prior-day close)
+6. EXIT_RULES: profit target %, stop/defensive trigger, time-stop
+7. SIZING: contracts / max collateral per trade, max trades per day
+8. EDGE: why this beats the incumbent (a plain iron butterfly) GIVEN your market call
+
+Be concrete and numeric — coded EXACTLY as written and run with real money data. Vague = disqualified. Return ONLY the filled 8-field spec. You're competing against 4 other strategists. Win the week.
