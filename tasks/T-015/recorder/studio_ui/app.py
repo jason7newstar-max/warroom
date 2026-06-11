@@ -14,6 +14,10 @@ import soundfile as sf
 from flask import Flask, jsonify, send_file, send_from_directory, abort
 
 SR = 48000
+# Monitoring buffer. Lower = less latency (better for the singer) but more CPU/glitch risk.
+# 128 @48k ≈ 2.7ms/block (~8ms round-trip) vs 512 ≈ 25ms. Tunable via env if it crackles.
+import os as _os
+MON_BLOCK = int(_os.environ.get("PHANTOM_BLOCK", "128"))
 TAKES = Path(__file__).parent / "takes"
 TAKES.mkdir(exist_ok=True)
 
@@ -158,7 +162,7 @@ if NATIVE:
     MONITOR_OK = True          # the JUCE native engine owns the device, not this app
 else:
     try:  # duplex (enables live wet monitoring)
-        _stream = sd.Stream(samplerate=SR, blocksize=512, device=(DEVICE_IN, DEVICE_OUT),
+        _stream = sd.Stream(samplerate=SR, blocksize=MON_BLOCK, device=(DEVICE_IN, DEVICE_OUT),
                             dtype="float32", channels=(1, 2), latency="low", callback=_duplex_cb)
         _stream.start()
         MONITOR_OK = True
