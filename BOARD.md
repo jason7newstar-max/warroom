@@ -27,29 +27,32 @@ Last updated: 2026-06-06 · by Dali (T-018 portfolio + expiry template)
 | T-008 | Dali: warm up Pinterest w/ EDM images (NO affiliate link yet — build traffic first) | Dali | solo | 🟢 done | main | 2026-06-05 |
 | T-009 | Dali: web FRONT-END for the war room (cinematic ONE TEN style; GitHub-sourced board/commits; Vercel-ready; no LLM/OpenRouter burn). Refinement: storyboard/分镜 frames, IA10 high-neck cardigan. **DONE: work-panel avatars auto-rotate the storyboard frames (soft crossfade, random start); Hero keeps canonical portraits. Live at warroom-red.vercel.app.** | Dali, IA10 | solo | 🟢 done | main | 2026-06-06 |
 | T-010 | 用语言写交响乐 → **LIVE 指挥表演乐器**. ACT1 作曲: NL→atomic ops→music21 活谱(核定版). ACT2 表演: 摄像头(MediaPipe/PoseNet)手势指挥这套活谱 — tempo/力度/cue 实时控. 人=不可替代的表演者. 交响先行→后拓流行/电音. PHASE 0 research: S1 landscape=IA10✅ S2 toolchain=Dali(after T-009) S3 競品=Karen(tonight) S4 PoC=Mini(tonight) S6 指挥PoC=later. **计划书 PROPOSAL.md ✅**. **M0 ✅ DONE** (maestro/: ops→music21→MIDI+audio CLI; Chairman demo 出声, pretty_midi tone render; orchestral音色 pending fluidsynth). **M0.5 ✅ DONE** (maestro_nl.py: plain语言→Groq Llama→atomic ops→score→sound; 中文整句 demo 验证出声). Next: 真音色(fluidsynth) 或 M1(对话式改谱). Docs tasks/T-010/. | IA10 +team | parallel | 🟡 in-progress (M0.5 done) | main | 2026-06-05 |
-
 | T-011 | "Vibe Coding 新的篇章" — next project (idea stage). Thesis TBD; brainstorm in tasks/T-011/. | IA10 (brainstorm) | solo | ⚪ idea | — | 2026-06-05 |
 | T-012 | Amazon Associate niche = **ENERGY DRINK** (summer + EDM-festival tie-in). Dali: generate several PRO, ad-quality energy-drink detail/landing product pages + detailed copy. Queued AFTER T-009 storyboard images (one Dali worker). Affiliate-link timing per traffic-first rule. **DONE: 3 pages (Neon Surge / Afterglow Hydra / NightDrive Pulse) + index in tasks/T-012/pages/.** Awaiting Chairman approve + deploy decision. | Dali | solo | 🟣 review | main | 2026-06-05 |
 | T-013 | 写歌 for Suno — analyze **PinLA Studio / Moon1k** channel (9.8K subs, emotional Future Bass, hits=warm romantic uplifting) → next-song direction + lyrics + MV. 4 agents write lyrics. **ANALYSIS.md ✅ (IA10 first pass)**; awaiting Chairman direction → then lyrics. | IA10→team | solo→parallel | 🟡 in-progress (research) | main | 2026-06-05 |
-
 | T-014 | Amazon Influencer 带货视频流水线 (PINLA/ONE TEN storefront, festival niche). Pipeline: real product img → Dali natural 16:9 cinematic scene → HyperFrames 9:16 video (centered, SAFE-ZONE captions, rotate templates) → Chrome Riddle BGM → ~/Downloads → Wentian uploads. **DONE: batch of 5 (2 Alani + 3 Celsius) in ~/Downloads/T014_v2_01-05.mp4, frames _batch_frames.png.** Pipeline reusable. Brief: tasks/T-014/BRIEF.md | IA10→Dali | solo | 🟢 done | main | 2026-06-06 |
-
 | T-015 | AI 自动录音环节 (scoped): standalone voice/foot-pedal-controlled multi-take VOCAL recorder (NOT mix/master — that→AI later). Build from scratch (Python prototype→Swift), drive Apogee Duet 2 via CoreAudio. Gear: iMac + Neumann TLM103 + Duet2. War-room brainstorm: Karen=landscape, Mini=design, Dali=tech+audio-IO spike, Gemma=3rd opinion, IA10=synth+Python MVP. Brief: tasks/T-015/BRIEF.md **M1 ✅ BUILT+TESTED (Dali): tasks/T-015/recorder/recorder.py — full-duplex record+play, multi-take WAV+JSON, keyboard+MIDI pedal; self-test PASS on built-in, auto-uses Duet when connected.** Next M2 punch-in (pre-roll). | IA10+team | parallel | 🟡 in-progress (M1 done) | main | 2026-06-06 |
-
 | T-016 | Productize the QUANTUM CORE desktop pet & SELL it (new business project). Interstellar black-hole visual + switchable skins + talk-to-it AI. KEY decision = the 'brain' for customers (BYO-key / local model / hosted). Idea stage, behind active builds. Brief: tasks/T-016/BRAINSTORM.md | IA10 | solo | ⚪ idea | — | 2026-06-06 |
 | T-017 | Upgrade energy-drink landing site from fictional T-012 cans to REAL products: Alani Nu + CELSIUS Cherry Cola + CELSIUS Blue Crush. **DONE: static site in tasks/T-017/site/ with real T-014 heroes, 3-image swipe galleries per product, Amazon storefront CTA, mandatory Associate disclosure. Live: https://site-vert-five-94.vercel.app** | Dali | solo | 🟢 done | main | 2026-06-06 |
-
 | T-018 | B2B outreach: pitch energy-drink brands (Celsius/Alani + mid-size DTC) for CREATIVE CONTENT partnership (cinematic videos/images/micro-sites/original BGM = ONE TEN COMPANY services). Lead with spec work already made. Right door = brand marketing/social/influencer-partnerships, NOT customer service. Karen=contacts+pitch-case research, Gemma=3rd view, IA10=offer+cold-email+portfolio. **Dali: private GORGIE + Bloom spec previews in tasks/T-018/spec/; ONE TEN STUDIO portfolio live: https://portfolio-liard-phi-c6x1goz0ci.vercel.app; 7-day expiry template + expired demo in tasks/T-018/expiry-template/.** | IA10+team | parallel | 🟡 in-progress (portfolio/expiry added) | main | 2026-06-06 |
-
 | T-019 | DJ Agency (NYC EDM/club bookings, Asia→NYC bridge) — IDEA. Real wedges: content machine (DJ EPKs) + Asia talent bridge. Hard: demand-side/venue trust, P/O visas, 2-sided cold-start. Enter content-first or niche-events, NOT generalist. Brief: tasks/T-019/BRAINSTORM.md | IA10 | solo | ⚪ idea/backlog | — | 2026-06-06 |
-
 | T-020 | Spec-MAKEOVER outreach engine for <10K micro-brands (= ONE TEN core motion). Pull their IG photos → cinematic makeover (product accurate) → micro-site → private 'made this for you' demo + payment plan → convert. IP: private pitch = low risk (don't post publicly, avoid 3rd-party-photographer shots). No mass-blast. Prototype ONE first. Brief: tasks/T-020/BRAINSTORM.md | IA10 | solo | 🟡 idea→prototype | — | 2026-06-06 |
-
 | T-021 | Evaluate the 'Claude→client-site + CMS + handoff' workflow (Jack Roberts video) for upgrading ONE TEN web-building. Key adopt = CMS/client-self-edit/handoff (scaling) + design-reference sourcing (Dribbble/Firecrawl) for UI polish. Karen=adopt plan, Mini=CMS stack eval, Gemma=opinion. | IA10+team | parallel | 🟡 in-progress (eval) | main | 2026-06-06 |
-
 | T-022 | Scan homework → auto-generate a video game (edtech). Realistic = OCR worksheet → inject problems into pre-built game TEMPLATES (not novel engine). Tech is easy; edtech distribution/monetization/retention is the hard part. Wedge = instant consumer scan→playable + visual polish, one subject first. IDEA/backlog. Brief: tasks/T-022/BRAINSTORM.md | IA10 | solo | ⚪ idea | — | 2026-06-06 |
-
 | T-023 | Idea-mining engine: mine startup/hackathon idea repositories (Devpost, YC RFS, Product Hunt, Red Bull Basement, MLH) → filter for what ONE TEN can build fast → build OWN execution → commercialize. IP: ideas NOT copyrightable; can build your own version (don't copy code/name/logo/design/patents). Moat = execution speed. Ties [[project_plan_c]]. | IA10 | solo | ⚪ idea | — | 2026-06-06 |
+| T-024 | Moon1k "Your Silence Is Too Loud" — play-count growth plan | IA10 | solo | 🟡 in-progress | main | 2026-06-13 |
+| T-025 | Higgsfield credit dispute — Zip email + Reddit + FTC complaint | IA10 | solo | 🟢 done | main | 2026-06-13 |
+| T-026 | ONE TEN LAB — Investor Pitch Deck (outline) | Dali | solo | 🟡 in-progress | main | 2026-06-13 |
+| T-027 | ONE TEN LAB — client micro-site template | Dali | solo | 🟢 done | main | 2026-06-13 |
+| T-028 | Plugin hosting + PinLA Studio own plugins (extends T-015) | IA10 | solo | ⚪ idea | main | 2026-06-13 |
+| T-029 | NYC independent restaurants/cafes w/ published contact email (lead list) | Karen | solo | 🟢 done | main | 2026-06-13 |
+| T-030 | ShotPro distribution wedge | IA10 | solo | 🟡 in-progress | main | 2026-06-13 |
+| T-031 | ShotPro Reddit free-makeover | Karen | solo | 🟡 in-progress | main | 2026-06-13 |
+| T-032 | IA10 set 2 — "RIZZ ENGINE" | IA10 | solo | ⚪ idea | main | 2026-06-13 |
+| T-033 | MULTIVERSE image batch → Karen (Higgsfield outage) | Karen | solo | 🟡 in-progress | main | 2026-06-13 |
+| T-034 | Shopify dropship — honest take | Karen | solo | ⚪ idea | main | 2026-06-13 |
+| T-035 | JARVIS mission-control console (Iron-Man HUD) + Hue hooks | Dali | solo | 🟡 in-progress | main | 2026-06-13 |
+| T-036 | Quant strategy BATTLE (5 agents · 1-wk paper · winner $1000 real) | IA10+team | parallel | 🟡 in-progress | main | 2026-06-13 |
 
 Status legend: 🔵 todo · 🟡 in-progress · 🟣 review · 🟢 done · 🔴 blocked · ⚪ parked
 
